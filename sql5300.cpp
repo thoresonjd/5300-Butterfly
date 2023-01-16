@@ -9,16 +9,25 @@
 #include <SQLParser.h>
 #include "db_cxx.h"
 
-using namespace std;
 using namespace hsql;
+using namespace std;
 
 const char *DATABASE = "database.db";
 const unsigned int BLOCK_SZ = 4096;
 
 
-string execute(SQLStatement sqlStatement) {
-    return NULL;
-}
+string execute(const SQLStatement*);
+
+string unparseSelect(const SelectStatement*);
+
+string unparseCreate(const CreateStatement*) ;
+
+string unparseExpression(Expr* );
+
+string unparseTableRef(TableRef* );
+
+string unparseJoin(JoinDefinition*);
+
 
 int main(int argc, char *argv[])
 {
@@ -50,16 +59,96 @@ int main(int argc, char *argv[])
         }
 
         // Parse sql statement
-        SQLParserResult* parseTree = SQLParser::parseSQLString(input);
+        SQLParserResult* const parseTree = SQLParser::parseSQLString(input);
+        size_t ptSize = parseTree->size();
 
 
         if (parseTree->isValid()) {
-            // TODO: We need to go through the parseTree here and call execute() on the SQL statements
-            cout << "Valid" << endl;
+            for (size_t i = 0; i < ptSize; i++) {
+                const SQLStatement* sqlStatment = parseTree->getStatement(i);
+                cout << execute(sqlStatment) << endl;
+            }
         } else {
             cout << "Invalid SQL: " << input << endl;
         }
     }
 
     return 0;
+}
+
+string execute(const SQLStatement* sqlStatement) {
+    string canonicalStatement = "";
+
+    switch(sqlStatement->type()) {
+        case kStmtCreate:
+            return unparseCreate(dynamic_cast<const CreateStatement*>(sqlStatement));
+            break;
+        case kStmtSelect:
+            return unparseSelect(dynamic_cast<const SelectStatement*>(sqlStatement));
+            break;
+        default:
+            return "";
+    }
+
+}
+
+string unparseCreate(const CreateStatement* sqlStatement) {
+    return "";
+}
+
+string unparseSelect(const SelectStatement* sqlStatement) {
+    string statement = "SELECT ";
+
+    size_t selectListSize = sqlStatement->selectList->size();
+    for (size_t i = 0; i < selectListSize; i++) {
+        statement += unparseExpression(sqlStatement->selectList->at(i));
+        statement += " ";
+    }
+
+    statement += "FROM ";
+    statement += unparseTableRef(sqlStatement->fromTable);
+
+    if (sqlStatement->whereClause != NULL) {
+        statement += " WHERE ";
+        statement += unparseExpression(sqlStatement->whereClause);
+    }
+
+    return statement;
+}
+
+string unparseExpression(Expr* expr) {
+    switch (expr->type) {
+        case kExprLiteralFloat:
+            return to_string(expr->fval);
+        case kExprLiteralString:
+            return expr->name;
+        case kExprLiteralInt:
+            return to_string(expr->ival);
+        case kExprStar:
+            return "*";
+        default:
+            return "";
+    }
+}
+
+string unparseTableRef(TableRef* tableRef) {
+    switch(tableRef->type) {
+        case kTableName:
+            return tableRef->getName();
+            cout << tableRef->getName() << endl;
+        case kTableSelect:
+        case kTableJoin:
+        case kTableCrossProduct:
+        default:
+            return "";
+    }
+}
+
+string unparseJoin(JoinDefinition* joinDefinition) {
+    switch(joinDefinition->type) {
+        case kJoinLeft:
+            return "LEFT JOIN";
+        default:
+            return "";
+    }
 }
