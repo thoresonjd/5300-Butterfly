@@ -1,11 +1,14 @@
 // AUTHOR:      Bobby Brown rbrown3 & Denis Rajic drajic
 // PROGRAM:     sql5300.cpp for 5300-BUTTERFLY
 // DATE:        Created 01/11/2023
-// PURPOSE:     
-// INPUT:       
-// PROCESS:     
-// OUTPUT:      
+// PURPOSE:     This is a program that runs from the command line and prompts
+//              the user for SQL statements and then executes them one at a
+//              time.
+// INPUT:       The user enters SQL statements via the command line.
+// OUTPUT:      Displays the parsed SQL statements from the parse tree to the
+//              screen.
 //
+
 #include <SQLParser.h>
 #include "db_cxx.h"
 
@@ -15,23 +18,46 @@ using namespace std;
 const char *DATABASE = "database.db";
 const unsigned int BLOCK_SZ = 4096;
 
+// Configures the database environment.
+// @param The string of the environment variable
+void configureDB(string)
 
+// Executes the SQL statement from the given parse tree.
 string execute(const SQLStatement*);
 
+// Unparses the SELECT statement from the given parse tree to a string.
+// @param A pointer to a SELECT statement
+// @return The string representation of the statement
 string unparseSelect(const SelectStatement*);
 
+// Unparses the CREATE statement from the given parse tree to a string.
+// @param A pointer to a CREATE statement
+// @return The string representation of the statement
 string unparseCreate(const CreateStatement*) ;
 
+// Unparses an Expr type into a string.
+// @param A pointer to an Expr statement
+// @return The string representation of the expression
 string unparseExpression(Expr*);
 
+// Unparses a TableRef type into a string.
+// @param A pointer to a TableRef statement
+// @return The string representation of the TableRef
 string unparseTableRef(TableRef*);
 
+// Unparses a JoinDefinition type into a string.
+// @param A pointer to a JoinDefinition statement
+// @return The string representation of the JoinDefinition
 string unparseJoin(JoinDefinition*);
+
+// Unparses a ColumnDefinition type into a string.
+// @param A pointer to a ColumnDefinition statement
+// @return The string representation of the ColumnDefinition
+string unparseColumn(ColumnDefinition*);
 
 
 int main(int argc, char *argv[])
 {
-
     // Get DB directory from command line
     string dbDirectory = argv[1];
 
@@ -48,7 +74,7 @@ int main(int argc, char *argv[])
 	db.open(NULL, DATABASE, NULL, DB_RECNO, DB_CREATE | DB_TRUNCATE, 0644); // Erases anything already there
 
     // Prompt user for sql statement
-    while (true) {
+    while (true) {      // May want to switch while loop.. run while input != quit?
         cout << "SQL> ";
 
         string input;
@@ -62,7 +88,7 @@ int main(int argc, char *argv[])
         SQLParserResult* const parseTree = SQLParser::parseSQLString(input);
         size_t ptSize = parseTree->size();
 
-
+        
         if (parseTree->isValid()) {
             for (size_t i = 0; i < ptSize; i++) {
                 const SQLStatement* sqlStatment = parseTree->getStatement(i);
