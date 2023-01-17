@@ -20,7 +20,7 @@ const unsigned int BLOCK_SZ = 4096;
 
 // Configures the database environment.
 // @param The string of the environment variable
-void configureDB(string)
+void configureDB(string);
 
 // Executes the SQL statement from the given parse tree.
 string execute(const SQLStatement*);
@@ -61,17 +61,8 @@ int main(int argc, char *argv[])
     // Get DB directory from command line
     string dbDirectory = argv[1];
 
-    // Initialize DB
-	DbEnv env(0U);
-	env.set_message_stream(&std::cout);
-	env.set_error_stream(&std::cerr);
-	env.open(dbDirectory.c_str(), DB_CREATE | DB_INIT_MPOOL, 0);
-
-    Db db(&env, 0);
-	db.set_message_stream(env.get_message_stream());
-	db.set_error_stream(env.get_error_stream());
-	db.set_re_len(BLOCK_SZ); // Set record length to 4K
-	db.open(NULL, DATABASE, NULL, DB_RECNO, DB_CREATE | DB_TRUNCATE, 0644); // Erases anything already there
+    // Call configureDB to initialize and create database
+    configureDB(dbDirectory);
 
     // Prompt user for sql statement
     while (true) {      // May want to switch while loop.. run while input != quit?
@@ -100,6 +91,23 @@ int main(int argc, char *argv[])
     }
 
     return 0;
+}
+
+void configureDB(string dir)
+{
+    // Initialize environment
+    DbEnv env(0U);
+    env.set_message_stream(&std::cout);
+    env.set_error_stream(&std::cerr);
+    env.open(dir.c_str(), DB_CREATE | DB_INIT_MPOOL, 0);
+
+    // Establish database
+    Db db(&env, 0);
+    db.set_message_stream(env.get_message_stream());
+    db.set_error_stream(env.get_error_stream());
+    db.set_re_len(BLOCK_SZ); // Set record length to 4K
+    // Erases existing database
+    db.open(NULL, DATABASE, NULL, DB_RECNO, DB_CREATE | DB_TRUNCATE, 0644);
 }
 
 string execute(const SQLStatement* sqlStatement) {
