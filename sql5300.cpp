@@ -22,9 +22,9 @@ string unparseSelect(const SelectStatement*);
 
 string unparseCreate(const CreateStatement*) ;
 
-string unparseExpression(Expr* );
+string unparseExpression(Expr*);
 
-string unparseTableRef(TableRef* );
+string unparseTableRef(TableRef*);
 
 string unparseJoin(JoinDefinition*);
 
@@ -97,17 +97,22 @@ string unparseCreate(const CreateStatement* sqlStatement) {
 }
 
 string unparseSelect(const SelectStatement* sqlStatement) {
+    // Unparse SELECT statement
     string statement = "SELECT ";
-
     size_t selectListSize = sqlStatement->selectList->size();
     for (size_t i = 0; i < selectListSize; i++) {
         statement += unparseExpression(sqlStatement->selectList->at(i));
+        if (i < selectListSize - 1) {
+            statement += ",";
+        }
         statement += " ";
     }
 
+    // Unparse FROM expression
     statement += "FROM ";
     statement += unparseTableRef(sqlStatement->fromTable);
 
+    // Unparse WHERE expression
     if (sqlStatement->whereClause != NULL) {
         statement += " WHERE ";
         statement += unparseExpression(sqlStatement->whereClause);
@@ -126,29 +131,54 @@ string unparseExpression(Expr* expr) {
             return to_string(expr->ival);
         case kExprStar:
             return "*";
+        case kExprColumnRef:{
+            string tableName = expr->table == NULL ? "" : expr->table;
+            string columnName = expr->name == NULL ? "" : expr->name;
+            return tableName == "" ? columnName : tableName + "." + columnName;
+        }
         default:
             return "";
     }
 }
 
 string unparseTableRef(TableRef* tableRef) {
+    string tableExpression = "";
     switch(tableRef->type) {
         case kTableName:
-            return tableRef->getName();
-            cout << tableRef->getName() << endl;
-        case kTableSelect:
+            return tableRef->name;
         case kTableJoin:
-        case kTableCrossProduct:
+            return unparseJoin(tableRef->join);
+        case kTableCrossProduct: {
+            size_t numTables = tableRef->list->size();
+            for (size_t i = 0; i < numTables; i++) {
+                tableExpression += unparseTableRef(tableRef->list->at(i));
+                tableExpression += " ";
+            }
+            return tableExpression;
+        }
         default:
             return "";
     }
 }
 
 string unparseJoin(JoinDefinition* joinDefinition) {
+    // left table
+    string joinStatement = unparseTableRef(joinDefinition->left);
+
+    // add join type
     switch(joinDefinition->type) {
         case kJoinLeft:
-            return "LEFT JOIN";
+            joinStatement += " LEFT JOIN ";
+            break;
         default:
             return "";
     }
+
+    // right table
+    joinStatement += unparseTableRef(joinDefinition->right);
+
+    // expression that tables are joined on
+    joinStatement += " ON ";
+    joinStatement += unparseExpression(joinDefinition->condition);
+    return joinStatement;
 }
