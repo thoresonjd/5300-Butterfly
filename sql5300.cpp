@@ -134,20 +134,37 @@ string execute(const SQLStatement* sqlStatement) {
 
 string unparseCreate(const CreateStatement* sqlStatement) 
 {
-    if(sqlStatement->type != CreateStatement::kTable)
+    if (sqlStatement->type != CreateStatement::kTable)
+    {
         return "nothing";
-    
-    string statement = "CREATE";
+    }
 
-    // Add " (" to create
+    string statement = "CREATE TABLE ";
+
+    // Add " (" to statement
+    statement.append(sqlStatement->tableName).append(" (");
 
     // Get size, based on number of columns
+    size_t columnSize = sqlStatement->columns->size();
 
     // Loop through statement for number of columns
+    for (size_t i = 0; i < columnSize; i++)
+    {
 
-    // Add column name to statement
-    
-     
+        // Get column definition
+        ColumnDefinition *col = sqlStatement->columns->at(i);
+
+        // Convert column definition to string and append to statement
+        statement.append(unparseColumn(col));
+
+        if (i < columnSize - 1)
+        {
+            statement.append(", ");
+        }
+    }
+
+    statement.append(")");
+
     return statement;
 }
 
