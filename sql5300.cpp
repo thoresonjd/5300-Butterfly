@@ -13,10 +13,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string>
+#include <vector>
 #include "db_cxx.h"
 #include "SQLParser.h"
 #include "sqlhelper.h"
-
 
 using namespace hsql;
 using namespace std;
@@ -134,8 +134,21 @@ string execute(const SQLStatement* sqlStatement) {
 
 string unparseCreate(const CreateStatement* sqlStatement) 
 {
+    if(sqlStatement->type != CreateStatement::kTable)
+        return "nothing";
     
-    return "";
+    string statement = "CREATE";
+
+    // Add " (" to create
+
+    // Get size, based on number of columns
+
+    // Loop through statement for number of columns
+
+    // Add column name to statement
+    
+     
+    return statement;
 }
 
 string unparseSelect(const SelectStatement* sqlStatement) {
