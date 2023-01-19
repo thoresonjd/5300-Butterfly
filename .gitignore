@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# Specific executable to ignore
+sql5300
