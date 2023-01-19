@@ -254,3 +254,26 @@ string unparseJoin(JoinDefinition* joinDefinition) {
     joinStatement += unparseExpression(joinDefinition->condition);
     return joinStatement;
 }
+
+string unparseColumn(ColumnDefinition* col)
+{
+    string column(col->name);
+
+    switch (col->type)
+    {
+        case ColumnDefinition::DOUBLE:
+            column.append(" DOUBLE");
+            break;
+        case ColumnDefinition::INT:
+            column.append(" INT");
+            break;
+        case ColumnDefinition::TEXT:
+            column.append(" TEXT");
+            break;
+        default:
+            column.append(" ...");
+            break;
+    }
+
+    return column;
+}
