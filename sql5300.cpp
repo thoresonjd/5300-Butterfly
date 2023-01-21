@@ -61,6 +61,11 @@ string unparseJoin(JoinDefinition*);
 // @return The string representation of the ColumnDefinition
 string unparseColumn(ColumnDefinition*);
 
+// Unparses an operator Expr* type into a string.
+// @param A pointer to a Expr statement
+// @return The string representation of the expression
+string unparseOperatorExpr(Expr*);
+
 
 int main(int argc, char *argv[])
 {
@@ -208,22 +213,64 @@ string unparseExpression(Expr* expr) {
             string columnName = expr->name == NULL ? "" : expr->name;
             return tableName == "" ? columnName : tableName + "." + columnName;
         }
+        case kExprFunctionRef:
+            return string(expr->name) + "?" + expr->expr->name;
+        case kExprOperator:
+            return unparseOperatorExpr(expr);
         default:
             return "";
     }
+}
+
+string unparseOperatorExpr(Expr* expr) {
+    if (expr == NULL) {
+        return "null";
+    }
+
+    string operatorExpr = "";
+
+    operatorExpr += unparseExpression(expr->expr);
+
+    switch (expr->opType) {
+        case Expr::AND:
+            operatorExpr += "AND";
+            break;
+        case Expr::OR:
+            operatorExpr += "OR";
+            break;
+        case Expr::SIMPLE_OP:
+            operatorExpr += " ";
+            operatorExpr += expr->opChar;
+            break;
+        default:
+            break;
+    }
+
+    if (expr->expr2 != NULL) {
+        operatorExpr += " " + unparseExpression(expr->expr2);
+    }
+
+    return operatorExpr;
 }
 
 string unparseTableRef(TableRef* tableRef) {
     string tableExpression = "";
     switch(tableRef->type) {
         case kTableName:
-            return tableRef->name;
+            tableExpression += tableRef->name;
+            if (tableRef->alias != NULL) {
+                tableExpression += string(" AS ") + tableRef->alias;
+            }
+            return tableExpression;
         case kTableJoin:
             return unparseJoin(tableRef->join);
         case kTableCrossProduct: {
             size_t numTables = tableRef->list->size();
             for (size_t i = 0; i < numTables; i++) {
                 tableExpression += unparseTableRef(tableRef->list->at(i));
+                if (i < numTables - 1) {
+                   tableExpression += ",";
+                }
                 tableExpression += " ";
             }
             return tableExpression;
@@ -242,6 +289,10 @@ string unparseJoin(JoinDefinition* joinDefinition) {
         case kJoinLeft:
             joinStatement += " LEFT JOIN ";
             break;
+        case kJoinCross:
+        case kJoinInner:
+            joinStatement += " JOIN ";
+            break;
         default:
             return "";
     }
@@ -250,8 +301,10 @@ string unparseJoin(JoinDefinition* joinDefinition) {
     joinStatement += unparseTableRef(joinDefinition->right);
 
     // expression that tables are joined on
-    joinStatement += " ON ";
-    joinStatement += unparseExpression(joinDefinition->condition);
+    if (joinDefinition->condition != NULL) {
+        joinStatement += " ON ";
+        joinStatement += unparseExpression(joinDefinition->condition);
+    }
     return joinStatement;
 }
 
