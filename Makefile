@@ -6,7 +6,7 @@ INCLUDE_DIR	= $(COURSE)/include
 LIB_DIR		= $(COURSE)/lib
 
 # following is a list of all the compiled object files needed to build the sql5300 executable
-OBJS		= sql5300.o
+OBJS		= sql5300.o heap_storage.o
 
 # General rule for compilation
 %.o: %.cpp
