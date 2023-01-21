@@ -7,7 +7,7 @@
 // INPUT:       The user enters SQL statements via the command line.
 // OUTPUT:      Displays the parsed SQL statements from the parse tree to the
 //              screen.
-//
+// Version:     Milestone1
 
 #include <stdio.h>
 #include <stdlib.h>
