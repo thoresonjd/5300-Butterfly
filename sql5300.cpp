@@ -243,7 +243,7 @@ string unparseOperatorExpr(Expr* expr) {
             operatorExpr += expr->opChar;
             break;
         default:
-            break;
+            operatorExpr += "";
     }
 
     if (expr->expr2 != NULL) {
