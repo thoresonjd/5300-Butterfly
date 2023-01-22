@@ -75,6 +75,8 @@ int main(int argc, char *argv[])
     // Call configureDB to initialize and create database
     configureDB(dbDirectory);
 
+    cout << "(sql5300: running with database environment at " << dbDirectory << ")" << endl;
+
     // Prompt user for sql statement
     while (true) {      // May want to switch while loop.. run while input != quit?
         cout << "SQL> ";
