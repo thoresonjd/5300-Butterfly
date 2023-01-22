@@ -33,12 +33,22 @@ RecordID SlottedPage::add(const Dbt* data) {
 }
 
 Dbt* SlottedPage::get(RecordID record_id) {
-    // TODO
-    return NULL;
+    u16 size, loc;
+    get_header(size, loc, record_id);
+
+    if (loc == 0) {
+        return NULL;
+    }
+
+    // TODO: Not sure what to do here
+    return this->get_block();
 }
 
 void SlottedPage::del(RecordID record_id) {
-    // TODO
+    u16 size, loc;
+    this->get_header(size, loc, record_id);
+    this->put_header(record_id, 0, 0);
+    this->slide(loc, loc + size);
     return;
 }
 
@@ -47,9 +57,16 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
     return;
 }
 
-RecordIDs*  SlottedPage::ids(void) {
-    // TODO
-    return NULL;
+RecordIDs* SlottedPage::ids(void) {
+    RecordIDs* recordIds = new RecordIDs();
+    for (int i = 1; i <= this->num_records; i++) {
+        u16 size, loc;
+        get_header(size, loc, i);
+        if (loc != 0) {
+            recordIds->push_back(i);
+        }
+    }
+    return recordIds;
 }
 
 // Get 2-byte integer at given offset in block.
@@ -76,6 +93,22 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
     put_n(4*id, size);
     put_n(4*id + 2, loc);
 }
+
+void SlottedPage::get_header(u16 &size, u16 &loc, RecordID id) {
+    size = this->get_n(4 * id);
+    loc = this->get_n(4 * id + 2);
+}
+
+void SlottedPage::slide(u16 start, u16 end) {
+    // TODO
+    return;
+}
+
+bool SlottedPage::has_room(u16 size) {
+    u16 available = this->end_free - (this->num_records + 1) * 4;
+    return size <= available;
+}
+
 
 
 // ---- HeapFile methods ---- // 
