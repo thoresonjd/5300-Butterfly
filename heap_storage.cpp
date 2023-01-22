@@ -49,12 +49,27 @@ void SlottedPage::del(RecordID record_id) {
     this->get_header(size, loc, record_id);
     this->put_header(record_id, 0, 0);
     this->slide(loc, loc + size);
-    return;
 }
 
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
-    // TODO
-    return;
+    u16 size, loc;
+    get_header(size, loc, record_id);
+    u16 new_size = (u16) data.get_size();
+
+    if (new_size > size) {
+        u16 extra = new_size - size;
+        if (!this->has_room(extra)) {
+                    throw DbBlockNoRoomError("not enough room in block");
+        }
+        this->slide(loc + new_size, loc + size);
+        memcpy(this->address(loc - extra), data.get_data(), loc + new_size);
+    } else {
+        memcpy(this->address(loc - new_size), data.get_data(), loc + new_size);
+        this->slide(loc + new_size, loc + size);
+    }
+    
+    get_header(size, loc, record_id);
+    this->put_header(record_id, new_size, loc);
 }
 
 RecordIDs* SlottedPage::ids(void) {
