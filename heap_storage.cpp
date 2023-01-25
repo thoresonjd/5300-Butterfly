@@ -40,8 +40,8 @@ Dbt* SlottedPage::get(RecordID record_id) {
         return NULL;
     }
 
-    // TODO: Not sure what to do here
-    return this->get_block();
+    // TODO: I think this is right but not sure
+    Dbt* dbt = new Dbt(this->get_block() + loc, size);
 }
 
 void SlottedPage::del(RecordID record_id) {
@@ -59,7 +59,7 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
     if (new_size > size) {
         u16 extra = new_size - size;
         if (!this->has_room(extra)) {
-                    throw DbBlockNoRoomError("not enough room in block");
+            throw DbBlockNoRoomError("not enough room in block");
         }
         this->slide(loc + new_size, loc + size);
         memcpy(this->address(loc - extra), data.get_data(), loc + new_size);
@@ -67,7 +67,7 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
         memcpy(this->address(loc - new_size), data.get_data(), loc + new_size);
         this->slide(loc + new_size, loc + size);
     }
-    
+
     get_header(size, loc, record_id);
     this->put_header(record_id, new_size, loc);
 }
