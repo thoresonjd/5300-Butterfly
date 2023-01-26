@@ -245,8 +245,16 @@ void HeapFile::create(void) {
 }
 
 void HeapFile::open(void) {
-    // TODO
-    return;
+    if (!this->closed) {
+        return;
+    }
+    this->db.set_re_len(DbBlock::BLOCK_SZ);
+    // TODO: Do we need _DB_ENV below?
+    this->dbfilename = this->name + ".db";
+    this->db.set_message_stream(_DB_ENV->get_message_stream());
+    this->db.set_error_stream(_DB_ENV->get_error_stream());
+    this->db.open(NULL, this->dbfilename.c_str(), NULL, DB_RECNO, DB_CREATE | DB_TRUNCATE, 0);
+    this->closed = false;
 }
 
 void HeapFile::drop(void) {
