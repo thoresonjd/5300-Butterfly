@@ -1,13 +1,13 @@
-// AUTHOR:      Bobby Brown rbrown3 & Denis Rajic drajic
-// PROGRAM:     sql5300.cpp for 5300-BUTTERFLY
-// DATE:        Created 01/11/2023
-// PURPOSE:     This is a program that runs from the command line and prompts
-//              the user for SQL statements and then executes them one at a
-//              time.
-// INPUT:       The user enters SQL statements via the command line.
-// OUTPUT:      Displays the parsed SQL statements from the parse tree to the
-//              screen.
-// Version:     Milestone1
+/**
+ * @file        sql5300.cpp for 5300-BUTTERFLY
+ *              This is a program that runs from the command line and prompts
+ *              the user for SQL statements and then executes them one at a
+ *              time.
+ * @authors     Bobby Brown rbrown3 & Denis Rajic drajic
+ * @date        Created 01/11/2023
+ * @version     Milestone 1 & Milestone 2
+ * 
+ */ 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
     // Call configureDB to initialize and create database
     configureDB(dbDirectory);
 
+    // Display message to user
     cout << "(sql5300: running with database environment at " << dbDirectory << ")" << endl;
 
     // Prompt user for sql statement
