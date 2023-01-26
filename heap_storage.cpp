@@ -96,7 +96,7 @@ Dbt* SlottedPage::get(RecordID record_id) {
     }
 
     // TODO: I think this is right but not sure
-    Dbt* dbt = new Dbt(this->get_block() + loc, size);
+    return new Dbt(this->address(loc), size);
 }
 
 // Delete
@@ -202,13 +202,13 @@ void SlottedPage::slide(u16 start, u16 end)
     u16 size, location;
     for (auto const& record_id: *ids())
     {
-         get_header(size, location, record_id);
+        get_header(size, location, record_id);
 
-         if (location != 0 && location <= start)
-         {
-            location += delta;
-            put_header(record_id, size, location);
-         }
+        if (location != 0 && location <= start)
+        {
+        location += delta;
+        put_header(record_id, size, location);
+        }
     }
 
     // Update end_free
@@ -245,6 +245,11 @@ void HeapFile::create(void) {
 }
 
 void HeapFile::open(void) {
+    // TODO
+    return;
+}
+
+void HeapFile::drop(void) {
     // TODO
     return;
 }
@@ -319,8 +324,7 @@ Handles* HeapTable::select(const ValueDict* where) {
 }
 
 void HeapTable::create() {
-    // TODO
-    return;
+    this->file.create();
 }
 
 void HeapTable::create_if_not_exists() {
@@ -329,17 +333,17 @@ void HeapTable::create_if_not_exists() {
 }
 
 void HeapTable::open() {
-    // TODO
+    this->file.open();
     return;
 }
 
 void HeapTable::close() {
-    // TODO
+    this->file.close();
     return;
 }
 
 void HeapTable::drop() {
-    // TODO
+    this->file.drop();
     return;
 }
 
