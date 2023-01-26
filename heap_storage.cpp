@@ -61,7 +61,7 @@ bool test_heap_storage()
 }
 
 // ---- SlottedPage methods ---- // 
-
+// Constructor
 SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new) : DbBlock(block, block_id, is_new) {
     if (is_new) {
         this->num_records = 0;
@@ -86,6 +86,7 @@ RecordID SlottedPage::add(const Dbt* data) {
     return id;
 }
 
+// Get
 Dbt* SlottedPage::get(RecordID record_id) {
     u16 size, loc;
     get_header(size, loc, record_id);
@@ -98,6 +99,7 @@ Dbt* SlottedPage::get(RecordID record_id) {
     Dbt* dbt = new Dbt(this->get_block() + loc, size);
 }
 
+// Delete
 void SlottedPage::del(RecordID record_id) {
     u16 size, loc;
     this->get_header(size, loc, record_id);
@@ -105,6 +107,7 @@ void SlottedPage::del(RecordID record_id) {
     this->slide(loc, loc + size);
 }
 
+// Put
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
     u16 size, loc;
     get_header(size, loc, record_id);
@@ -126,6 +129,7 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
     this->put_header(record_id, new_size, loc);
 }
 
+// Get ids
 RecordIDs* SlottedPage::ids(void) {
     RecordIDs* recordIds = new RecordIDs();
     for (int i = 1; i <= this->num_records; i++) {
@@ -153,6 +157,13 @@ void* SlottedPage::address(u16 offset) {
     return (void*)((char*)this->block.get_data() + offset);
 }
 
+// Get header
+void SlottedPage::get_header(u16 &size, u16 &loc, RecordID id) {
+    size = this->get_n(4 * id);
+    loc = this->get_n(4 * id + 2);
+}
+
+// Put header
 // Store the size and offset for given id. For id of zero, store the block header.
 void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
     if (id == 0) { // called the put_header() version and using the default params
@@ -163,19 +174,47 @@ void SlottedPage::put_header(RecordID id, u16 size, u16 loc) {
     put_n(4*id + 2, loc);
 }
 
-void SlottedPage::get_header(u16 &size, u16 &loc, RecordID id) {
-    size = this->get_n(4 * id);
-    loc = this->get_n(4 * id + 2);
-}
-
-void SlottedPage::slide(u16 start, u16 end) {
-    // TODO
-    return;
-}
-
+// Has room
 bool SlottedPage::has_room(u16 size) {
     u16 available = this->end_free - (this->num_records + 1) * 4;
     return size <= available;
+}
+
+void SlottedPage::slide(u16 start, u16 end) 
+{
+    // TODO
+    int delta = end - start;
+
+    if (delta == 0)
+    {
+        return;
+    }
+
+    u16 moveLoc = this->end_free + 1;
+    u16 moveSize =  start - moveLoc;
+    u16 newLoc = moveLoc + delta;
+
+    // Current record location
+    Dbt tempData(this->address(moveLoc), moveSize);
+    memcpy(this->address(newLoc), this->address(moveLoc), moveSize);
+
+    // Update headers
+    u16 size, location;
+    for (auto const& record_id: *ids())
+    {
+         get_header(size, location, record_id);
+
+         if (location != 0 && location <= start)
+         {
+            location += delta;
+            put_header(record_id, size, location);
+         }
+    }
+
+    // Update end_free
+    this->end_free += delta;
+
+    this->put_header();
 }
 
 
