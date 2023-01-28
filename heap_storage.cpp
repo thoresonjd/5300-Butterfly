@@ -357,9 +357,8 @@ void HeapTable::drop() {
 
 Handle HeapTable::insert(const ValueDict *row) {
     this->open();
-    ValueDict* row = this->validate(row);
-    delete row;
-    return this->append(row);
+    ValueDict* validatedRow = this->validate(row);
+    return this->append(validatedRow);
 }
 
 Handle HeapTable::append(const ValueDict *row) {
