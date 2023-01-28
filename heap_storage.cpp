@@ -132,7 +132,7 @@ void SlottedPage::put(RecordID record_id, const Dbt &data) {
 // Get ids
 RecordIDs* SlottedPage::ids(void) {
     RecordIDs* recordIds = new RecordIDs();
-    for (int i = 1; i <= this->num_records; i++) {
+    for (u16 i = 1; i <= this->num_records; i++) {
         u16 size, loc;
         get_header(size, loc, i);
         if (loc != 0) {
@@ -336,26 +336,43 @@ void HeapTable::create() {
 }
 
 void HeapTable::create_if_not_exists() {
-    // TODO
-    return;
+    try {
+        this->file.create();
+    } catch (DbRelationError &e) {
+        this->file.create();
+    }
 }
 
 void HeapTable::open() {
     this->file.open();
-    return;
 }
 
 void HeapTable::close() {
     this->file.close();
-    return;
 }
 
 void HeapTable::drop() {
     this->file.drop();
-    return;
 }
 
 Handle HeapTable::insert(const ValueDict *row) {
-    // TODO
-    // Only handle two data types for now, INTEGER (or INT) and TEXT
+    this->open();
+    this->append(row);
+}
+
+Handle HeapTable::append(const ValueDict *row) {
+
+}
+
+ValueDict* HeapTable::validate(const ValueDict *row) {
+    ValueDict* fullRow = new ValueDict();
+    for (Identifier &columnName : this->column_names) {
+        ValueDict::const_iterator column = row->find(columnName);
+        if (column == row->end()) {
+            throw DbRelationError("no column name");
+        } else {
+            fullRow->insert({columnName, column->second});
+        }
+    }
+    return fullRow;
 }
