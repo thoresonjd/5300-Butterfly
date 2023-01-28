@@ -253,16 +253,7 @@ void HeapFile::create(void)
 }
 
 void HeapFile::open(void) {
-    if (!this->closed) {
-        return;
-    }
-    this->db.set_re_len(DbBlock::BLOCK_SZ);
-    // TODO: Do we need _DB_ENV below?
-    this->dbfilename = this->name + ".db";
-    this->db.set_message_stream(_DB_ENV->get_message_stream());
-    this->db.set_error_stream(_DB_ENV->get_error_stream());
-    this->db.open(NULL, this->dbfilename.c_str(), NULL, DB_RECNO, DB_CREATE | DB_TRUNCATE, 0);
-    this->closed = false;
+    this->db_open();
 }
 
 void HeapFile::drop(void)
@@ -336,12 +327,28 @@ BlockIDs* HeapFile::block_ids()
     return block_ids;
 }
 
+void HeapFile::db_open(uint flags) {
+    if (!this->closed) {
+        return;
+    }
+    this->db.set_re_len(DbBlock::BLOCK_SZ);
+    this->dbfilename = this->name + ".db";
+    this->db.set_message_stream(_DB_ENV->get_message_stream());
+    this->db.set_error_stream(_DB_ENV->get_error_stream());
+    this->db.open(NULL, this->dbfilename.c_str(), NULL, DB_RECNO, flags, 0);
+    this->closed = false;
+}
 
 
 // ---- HeapTable methods ---- // 
 
 // return the bits to go into the file
 // caller responsible for freeing the returned Dbt and its enclosed ret->get_data().
+HeapTable::HeapTable(Identifier table_name, ColumnNames column_names, ColumnAttributes column_attributes)
+    : DbRelation(table_name, column_names, column_attributes), file(table_name) {
+        
+}
+
 Dbt* HeapTable::marshal(const ValueDict* row) {
     char *bytes = new char[DbBlock::BLOCK_SZ]; // more than we need (we insist that one row fits into DbBlock::BLOCK_SZ)
     uint offset = 0;
@@ -369,6 +376,32 @@ Dbt* HeapTable::marshal(const ValueDict* row) {
     Dbt *data = new Dbt(right_size_bytes, offset);
     return data;
 }
+
+ValueDict* HeapTable::unmarshal(Dbt *data) {
+    ValueDict* row = new ValueDict();
+    char* bytes = (char*) data->get_data();
+    int offset = 0;
+
+    for (u_int32_t i = 0; i < column_names.size(); i++) {
+        ColumnAttribute columnAttribute = this->column_attributes.at(i);
+        if (columnAttribute.get_data_type() == ColumnAttribute::DataType::INT) {
+            Value value = Value(*(u_int32_t*) (bytes + offset));
+            row->insert({column_names.at(i), value});
+            offset += sizeof(u_int32_t);
+        } else if (columnAttribute.get_data_type() == ColumnAttribute::DataType::TEXT) {
+            u16 size = *(u16*)(bytes + offset);
+            offset+= sizeof(u16);
+            Value value(std::string(bytes + offset, size));
+            row->insert({column_names.at(i), value});
+            offset += size;
+        } else {
+            throw DbRelationError("Cannot unmarshal " + columnAttribute.get_data_type());
+        }
+    }
+
+    return row;
+}
+
 
 void HeapTable::create() {
     this->file.create();
@@ -433,6 +466,15 @@ ValueDict* HeapTable::validate(const ValueDict *row) {
     }
     return fullRow;
 }
+
+void HeapTable::del(const Handle handle) {
+    return;
+}
+
+void HeapTable::update(const Handle handle, const ValueDict *new_values) {
+    return;
+}
+
 
 Handles* HeapTable::select() {
     return this->select(nullptr);
