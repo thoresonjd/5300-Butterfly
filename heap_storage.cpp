@@ -290,24 +290,50 @@ void HeapFile::drop(void)
         throw std::logic_error("Unabel to remove DB file");
 }
 
-void HeapFile::close(void) {
-    // TODO
-    return;
+void HeapFile::close(void)
+{
+    this->db.close(0);
+    this->closed = true;
 }
 
-SlottedPage* HeapFile::get(BlockID block_id) {
-    // TODO
-    return NULL;
+SlottedPage* HeapFile::get(BlockID block_id)
+{
+    // Dbt key for given block_id
+    Dbt key(&block_id, sizeof(block_id));
+    Dbt block;  // Empty block
+
+    // Get data from database, and store in empty block
+    this->db.get(NULL, &key, &block, 0);
+
+    // Return new slotted page from the block
+    return new SlottedPage(block, block_id);
+
 }
 
-void HeapFile::put(DbBlock *block) {
-    // TODO
-    return;
+void HeapFile::put(DbBlock *block)
+{
+    // Get the block_id for the given block
+    BlockID block_id = block->get_block_id();
+    
+    // Dbt key for given block_id
+    Dbt key(&block_id, sizeof(block_id));
+
+    // Put the key and block in the database
+    this->db.put(NULL, &key, block->get_block(), 0);
 }
 
-BlockIDs* HeapFile::block_ids() {
-    // TODO
-    return NULL;
+BlockIDs* HeapFile::block_ids()
+{
+    // Create new BlockIDs structure (vector)
+    BlockIDs* block_ids = new BlockIDs;
+
+    // Traverse through block_ids and return the vector
+    for (BlockID block_id = 1; block_id <= this->last; block_id++)
+    {
+        block_ids->push_back(block_id);
+    }
+
+    return block_ids;
 }
 
 
