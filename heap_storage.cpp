@@ -357,10 +357,29 @@ void HeapTable::drop() {
 
 Handle HeapTable::insert(const ValueDict *row) {
     this->open();
-    this->append(row);
+    ValueDict* row = this->validate(row);
+    delete row;
+    return this->append(row);
 }
 
 Handle HeapTable::append(const ValueDict *row) {
+    // Marshal the data
+    Dbt* data = this->marshal(row);
+    // Get last block
+    SlottedPage* block = this->file.get(this->file.get_last_block_id());
+
+    RecordID recordId;
+    // Add data to block, if full create new blcok
+    try {
+        recordId = block->add(data);
+    } catch (DbRelationError& e) {
+        block = this->file.get_new();
+        recordId = block->add(data);
+    }
+
+    // Add new block to file, return block and record ids
+    this->file.put(block);
+    return Handle(this->file.get_last_block_id(), recordId);
 
 }
 
