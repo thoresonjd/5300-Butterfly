@@ -337,7 +337,7 @@ void HeapTable::create() {
 
 void HeapTable::create_if_not_exists() {
     try {
-        this->file.create();
+        this->file.open();
     } catch (DbRelationError &e) {
         this->file.create();
     }
