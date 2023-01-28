@@ -325,7 +325,7 @@ void HeapFile::put(DbBlock *block)
 BlockIDs* HeapFile::block_ids()
 {
     // Create new BlockIDs structure (vector)
-    BlockIDs* block_ids = new BlockIDs;
+    BlockIDs* block_ids = new BlockIDs();
 
     // Traverse through block_ids and return the vector
     for (BlockID block_id = 1; block_id <= this->last; block_id++)
@@ -368,21 +368,6 @@ Dbt* HeapTable::marshal(const ValueDict* row) {
     delete[] bytes;
     Dbt *data = new Dbt(right_size_bytes, offset);
     return data;
-}
-
-Handles* HeapTable::select(const ValueDict* where) {
-    Handles* handles = new Handles();
-    BlockIDs* block_ids = file.block_ids();
-    for (auto const& block_id: *block_ids) {
-        SlottedPage* block = file.get(block_id);
-        RecordIDs* record_ids = block->ids();
-        for (auto const& record_id: *record_ids)
-            handles->push_back(Handle(block_id, record_id));
-        delete record_ids;
-        delete block;
-    }
-    delete block_ids;
-    return handles;
 }
 
 void HeapTable::create() {
@@ -447,4 +432,45 @@ ValueDict* HeapTable::validate(const ValueDict *row) {
         }
     }
     return fullRow;
+}
+
+Handles* HeapTable::select() {
+    return this->select(nullptr);
+}
+
+Handles* HeapTable::select(const ValueDict* where) {
+    Handles* handles = new Handles();
+    BlockIDs* block_ids = file.block_ids();
+    for (auto const& block_id: *block_ids) {
+        SlottedPage* block = file.get(block_id);
+        RecordIDs* record_ids = block->ids();
+        for (auto const& record_id: *record_ids)
+            handles->push_back(Handle(block_id, record_id));
+        delete record_ids;
+        delete block;
+    }
+    delete block_ids;
+    return handles;
+}
+
+ValueDict* HeapTable::project(Handle handle) {
+    return this->project(handle, nullptr);
+}
+
+ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names) {
+    BlockID blockId = handle.first;
+    RecordID recordId = handle.second;
+    SlottedPage* block = this->file.get(blockId);
+    Dbt* data = block->get(recordId);
+    ValueDict* row = this->unmarshal(data);
+
+    if (column_names == NULL) {
+        return row;
+    }
+
+    ValueDict* newRow = new ValueDict();
+    for (Identifier columnName : *column_names) {
+        newRow->insert({columnName, row->at(columnName)});
+    }
+    return row;
 }
