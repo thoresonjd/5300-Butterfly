@@ -239,9 +239,17 @@ SlottedPage* HeapFile::get_new(void) {
     return page;
 }
 
-void HeapFile::create(void) {
-    // TODO
-    return;
+void HeapFile::create(void)
+{
+    // Open database
+    this->db_open(DB_CREATE | DB_TRUNCATE);
+
+    // Create new block and add to database
+    SlottedPage* block = this->get_new();
+    this->put(block);
+
+    // Delete memory for empty block
+    delete block;
 }
 
 void HeapFile::open(void) {
@@ -257,9 +265,29 @@ void HeapFile::open(void) {
     this->closed = false;
 }
 
-void HeapFile::drop(void) {
-    // TODO
-    return;
+void HeapFile::drop(void)
+{
+    // Close the current HeapFile
+    this->close();
+
+    // character array to hold home path
+    const char **homePath = new const char*[1024];
+
+    // Get homepath for current database environment
+    _DB_ENV->get_home(homePath);
+
+    // Build string for path to database file
+    std::string filePath = std::string(*homePath) + "/" + this->dbfilename;
+
+    // Remove filePath and store as integer
+    int dropResult = std::remove(filePath.c_str());
+
+    // Free memory for homePath char array
+    delete[] homePath;
+
+    // Check result of remove operation and display error if file not removed
+    if (dropResult != 0)
+        throw std::logic_error("Unabel to remove DB file");
 }
 
 void HeapFile::close(void) {
