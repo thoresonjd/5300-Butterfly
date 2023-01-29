@@ -11,18 +11,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstring>
 #include <iostream>
 #include <string>
-#include <vector>
+#include <cassert>
 #include "db_cxx.h"
 #include "SQLParser.h"
 #include "sqlhelper.h"
+#include "heap_storage.h"
 
 using namespace hsql;
 using namespace std;
 
 const char *DATABASE = "database.db";
 const unsigned int BLOCK_SZ = 4096;
+DbEnv *_DB_ENV;
 
 // Configures the database environment.
 // @param The string of the environment variable
@@ -70,10 +73,20 @@ string unparseOperatorExpr(Expr*);
 int main(int argc, char *argv[])
 {
     // Get DB directory from command line
-    string dbDirectory = argv[1];
+    char* dbDirectory = argv[1];
 
     // Call configureDB to initialize and create database
-    configureDB(dbDirectory);
+    // Initialize environment
+    DbEnv env(0U);
+    env.set_message_stream(&std::cout);
+    env.set_error_stream(&std::cerr);
+        try {
+        env.open(dbDirectory, DB_CREATE | DB_INIT_MPOOL, 0);
+    } catch (DbException &exc) {
+        cerr << "(sql5300: " << exc.what() << ")";
+        exit(1);
+    }
+    _DB_ENV = &env;
 
     // Display message to user
     cout << "(sql5300: running with database environment at " << dbDirectory << ")" << endl;
@@ -86,7 +99,13 @@ int main(int argc, char *argv[])
         getline(cin, input);
 
         if (input == "quit") {
-            return 0;
+            return EXIT_SUCCESS;
+        }
+
+        if (input == "test") {
+            cout << "test_heap_storage: " << (test_heap_storage() ? "ok" : "failed") << endl;
+            return EXIT_SUCCESS;
+        
         }
 
         // Parse sql statement
@@ -104,24 +123,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    return 0;
-}
 
-void configureDB(string dir)
-{
-    // Initialize environment
-    DbEnv env(0U);
-    env.set_message_stream(&std::cout);
-    env.set_error_stream(&std::cerr);
-    env.open(dir.c_str(), DB_CREATE | DB_INIT_MPOOL, 0);
-
-    // Establish database
-    Db db(&env, 0);
-    db.set_message_stream(env.get_message_stream());
-    db.set_error_stream(env.get_error_stream());
-    db.set_re_len(BLOCK_SZ); // Set record length to 4K
-    // Erases existing database
-    db.open(NULL, DATABASE, NULL, DB_RECNO, DB_CREATE | DB_TRUNCATE, 0644);
+    return EXIT_SUCCESS;
 }
 
 string execute(const SQLStatement* sqlStatement) {
