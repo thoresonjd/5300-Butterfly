@@ -283,17 +283,27 @@ void SlottedPage::slide(u16 start, u16 end)
 // Allocate a new block for the database file.
 // Returns the new empty DbBlock that is managing the records in this block and its block id.
 SlottedPage* HeapFile::get_new(void) {
+    // block char array based on block size
     char block[DbBlock::BLOCK_SZ];
+
+    // Set number of block bytes to size of the block
     std::memset(block, 0, sizeof(block));
+
+    // Create Dbt object using the block
     Dbt data(block, sizeof(block));
 
+    // Set block_id and create Dbt key
     int block_id = ++this->last;
     Dbt key(&block_id, sizeof(block_id));
 
-    // write out an empty block and read it back in so Berkeley DB is managing the memory
+    // Write out an empty block and read it back in so Berkeley DB is 
+    // managing the memory
     SlottedPage* page = new SlottedPage(data, this->last, true);
-    this->db.put(nullptr, &key, &data, 0); // write it out with initialization applied
+
+    // Write with initialization applied
+    this->db.put(nullptr, &key, &data, 0);
     this->db.get(nullptr, &key, &data, 0);
+    
     return page;
 }
 
@@ -311,7 +321,7 @@ void HeapFile::create(void)
 }
 
 void HeapFile::open(void) {
-    this->db_open();
+    this->db_open();    // Open database
 }
 
 void HeapFile::drop(void)
@@ -341,6 +351,7 @@ void HeapFile::drop(void)
 
 void HeapFile::close(void)
 {
+    // Close datbase and set closed flag to true
     this->db.close(0);
     this->closed = true;
 }
@@ -373,7 +384,7 @@ void HeapFile::put(DbBlock *block)
 
 BlockIDs* HeapFile::block_ids()
 {
-    // Create new BlockIDs structure (vector)
+    // Create new BlockIDs list structure (vector)
     BlockIDs* block_ids = new BlockIDs();
 
     // Traverse through block_ids and return the vector
@@ -382,13 +393,17 @@ BlockIDs* HeapFile::block_ids()
         block_ids->push_back(block_id);
     }
 
+    // Return the blockID list
     return block_ids;
 }
 
 void HeapFile::db_open(uint flags) {
+    // Check flag to determine if database is closed
     if (!this->closed) {
         return;
     }
+
+    // Reset database
     this->db.set_re_len(DbBlock::BLOCK_SZ);
     this->dbfilename = this->name + ".db";
     this->db.set_message_stream(_DB_ENV->get_message_stream());
@@ -400,56 +415,96 @@ void HeapFile::db_open(uint flags) {
 
 // ---- HeapTable methods ---- // 
 
-// return the bits to go into the file
-// caller responsible for freeing the returned Dbt and its enclosed ret->get_data().
+// Return the bits to go into the file
+// Caller responsible for freeing the returned Dbt and its enclosed 
+// ret->get_data().
 HeapTable::HeapTable(Identifier table_name, ColumnNames column_names, ColumnAttributes column_attributes)
-    : DbRelation(table_name, column_names, column_attributes), file(table_name) {
-        
+    : DbRelation(table_name, column_names, column_attributes), file(table_name) 
+{
+
 }
 
+// Marshal the row from the table into a Dbt
 Dbt* HeapTable::marshal(const ValueDict* row) {
-    char *bytes = new char[DbBlock::BLOCK_SZ]; // more than we need (we insist that one row fits into DbBlock::BLOCK_SZ)
+    // Char bytes array to be bigger than needed
+    // Want to ensure one row fits into DbBlock::BLOCK_SZ
+    char *bytes = new char[DbBlock::BLOCK_SZ];
+    
+    // Set offset and col_num to zero
     uint offset = 0;
     uint col_num = 0;
-    for (auto const& column_name: this->column_names) {
+
+    // Traverse through columns
+    for (auto const& column_name: this->column_names)
+    {
+        // Get column attributes for each column
         ColumnAttribute ca = this->column_attributes[col_num++];
         ValueDict::const_iterator column = row->find(column_name);
         Value value = column->second;
+
+        // Check column attribute data type for INT and TEXT
         if (ca.get_data_type() == ColumnAttribute::DataType::INT) {
+            // Get 32-bit int combination of bytes and offset and set to value.n
             *(int32_t*) (bytes + offset) = value.n;
             offset += sizeof(int32_t);
         } else if (ca.get_data_type() == ColumnAttribute::DataType::TEXT) {
+            // Determine size of the text
             uint size = value.s.length();
             *(u16*) (bytes + offset) = size;
             offset += sizeof(u16);
-            memcpy(bytes+offset, value.s.c_str(), size); // assume ascii for now
+
+            // Memcpy the bytes and offset to value.s, assuming ascii
+            memcpy(bytes+offset, value.s.c_str(), size);
             offset += size;
         } else {
             throw DbRelationError("Only know how to marshal INT and TEXT");
         }
     }
+
+    // Create updated char array and copy bytes and offset
     char *right_size_bytes = new char[offset];
     memcpy(right_size_bytes, bytes, offset);
+
+    // Delete bytes array
     delete[] bytes;
+
+    // Return new Dbt object with marshalled data
     Dbt *data = new Dbt(right_size_bytes, offset);
     return data;
 }
 
+// Unmarshall Dbt data into a table row
 ValueDict* HeapTable::unmarshal(Dbt *data) {
+    // A value dictonary to hold the contents for the row
     ValueDict* row = new ValueDict();
-    char* bytes = (char*) data->get_data();
-    int offset = 0;
 
-    for (u_int32_t i = 0; i < column_names.size(); i++) {
+    // Create a bytes array for the data being unmarshalled
+    char* bytes = (char*) data->get_data();
+    int offset = 0; // Set the initial offset to zero
+
+    // Traverse through columns
+    for (u_int32_t i = 0; i < column_names.size(); i++)
+    {
+        // Get column attributes for each column
         ColumnAttribute columnAttribute = this->column_attributes.at(i);
-        if (columnAttribute.get_data_type() == ColumnAttribute::DataType::INT) {
+        
+        // Check column attribute data type for INT and TEXT
+        if (columnAttribute.get_data_type() == ColumnAttribute::DataType::INT)
+        {
+            // Get the value from the bytes and offset
             Value value = Value(*(u_int32_t*) (bytes + offset));
+
+            // Insert value into the row
             row->insert({column_names.at(i), value});
             offset += sizeof(u_int32_t);
-        } else if (columnAttribute.get_data_type() == ColumnAttribute::DataType::TEXT) {
+        } else if (columnAttribute.get_data_type() == ColumnAttribute::DataType::TEXT)
+        {
+            // Get the value of the text from the bytes and offset
             u16 size = *(u16*)(bytes + offset);
             offset+= sizeof(u16);
             Value value(std::string(bytes + offset, size));
+            
+            // Insert value into the row
             row->insert({column_names.at(i), value});
             offset += size;
         } else {
@@ -457,6 +512,10 @@ ValueDict* HeapTable::unmarshal(Dbt *data) {
         }
     }
 
+    // Delete bytes array
+    delete[] bytes;
+
+    // Return row
     return row;
 }
 
