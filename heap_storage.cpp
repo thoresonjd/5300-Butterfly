@@ -55,10 +55,10 @@ bool test_heap_storage()
     Handles* handles = table.select();
     std::cout << "select ok " << handles->size() << std::endl;
     ValueDict *result = table.project((*handles)[0]);
+    std::cout << "project ok" << std::endl;
 
     // Store values from the table
     Value valueA = (*result)["a"], valueB = (*result)["b"];
-    std::cout << "project ok" << std::endl;
 
     // Drop table and cleanup memory
     table.drop();
@@ -655,7 +655,7 @@ ValueDict* HeapTable::project(Handle handle) {
 }
 
 // Project overload function
-ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names)
+ValueDict* HeapTable::project(Handle handle, const ColumnNames* column_names)
 {
     // Get the blockID of the first item in the handle
     BlockID blockId = handle.first;
@@ -672,10 +672,6 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names)
     // Unmarshal the data
     ValueDict* row = this->unmarshal(data);
 
-    // Delete block and data to cleanup
-    delete block;
-    delete data;
-
     // Check if there are column names, and return the row if there are none
     if (column_names == NULL) {
         return row;
@@ -687,9 +683,6 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names)
         newRow->insert({columnName, row->at(columnName)});
     }
 
-    // Cleanup old row
-    delete row;
-
-    // Return newRow
+    // Return row
     return row;
 }
