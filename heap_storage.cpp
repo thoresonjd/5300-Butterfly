@@ -521,35 +521,42 @@ ValueDict* HeapTable::unmarshal(Dbt *data) {
 
 
 void HeapTable::create() {
-    this->file.create();
+    this->file.create();    // Database file create
 }
 
 void HeapTable::create_if_not_exists() {
+    // Try to open database file, if it fails, create new file
     try {
-        this->file.open();
+        this->file.open();  
     } catch (DbException &e) {
         this->file.create();
     }
 }
 
 void HeapTable::open() {
-    this->file.open();
+    this->file.open();  // Open database file
 }
 
 void HeapTable::close() {
-    this->file.close();
+    this->file.close(); // Close datanase file
 }
 
 void HeapTable::drop() {
-    this->file.drop();
+    this->file.drop();  // Drop database file
 }
 
+// Insert a row into the HeapTable
 Handle HeapTable::insert(const ValueDict *row) {
-    this->open();
+    this->open();   // Open HeapTable
+
+    // Validate the passed in row
     ValueDict* validatedRow = this->validate(row);
+    
+    // Return result of append
     return this->append(validatedRow);
 }
 
+// Appned the HeapTable with an existing row
 Handle HeapTable::append(const ValueDict *row) {
     // Marshal the data
     Dbt* data = this->marshal(row);
@@ -571,65 +578,120 @@ Handle HeapTable::append(const ValueDict *row) {
 
 }
 
-ValueDict* HeapTable::validate(const ValueDict *row) {
+// Validate
+ValueDict* HeapTable::validate(const ValueDict *row)
+{
+    // Value Dictionary to store a the validated full row
     ValueDict* fullRow = new ValueDict();
-    for (Identifier &columnName : this->column_names) {
+
+    // Traverse through the HeapTable by column name
+    for (Identifier &columnName : this->column_names)
+    {
+        // Get the column name of the current column
         ValueDict::const_iterator column = row->find(columnName);
+
+        // Check if the column is the end of the row
         if (column == row->end()) {
             throw DbRelationError("no column name");
         } else {
+            // Insert column and value into the fullRow
             fullRow->insert({columnName, column->second});
         }
     }
+    
+    // Return the fullRow
     return fullRow;
 }
 
+// HeapTable::del not inplemented
 void HeapTable::del(const Handle handle) {
     return;
 }
 
+// HeapTable::update not implemented
 void HeapTable::update(const Handle handle, const ValueDict *new_values) {
     return;
 }
 
-
+// Select
 Handles* HeapTable::select() {
     return this->select(nullptr);
 }
 
-Handles* HeapTable::select(const ValueDict* where) {
+// Select overload function
+Handles* HeapTable::select(const ValueDict* where)
+{
+    // Create new Handles vector
     Handles* handles = new Handles();
+
+    // Create BlockIDs vector from the HeapFile
     BlockIDs* block_ids = file.block_ids();
-    for (auto const& block_id: *block_ids) {
+
+    // Traverse through block_ids
+    for (auto const& block_id: *block_ids) 
+    {
+        // Get the block id and record ids
         SlottedPage* block = file.get(block_id);
         RecordIDs* record_ids = block->ids();
+
+        // Traverse through record ids
         for (auto const& record_id: *record_ids)
+            // Push the handled block and record IDs to the vector
             handles->push_back(Handle(block_id, record_id));
+
+        // Cleanup memory
         delete record_ids;
         delete block;
     }
+
+    // Delete block_ids
     delete block_ids;
+
+    // Return handles
     return handles;
 }
 
+// Project
 ValueDict* HeapTable::project(Handle handle) {
     return this->project(handle, nullptr);
 }
 
-ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names) {
+// Project overload function
+ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names)
+{
+    // Get the blockID of the first item in the handle
     BlockID blockId = handle.first;
+
+    // Get the recordID of the second item in the handle
     RecordID recordId = handle.second;
+
+    // Create a slotted page with the blockID from the HeapTable
     SlottedPage* block = this->file.get(blockId);
+
+    // Create a Dbt using the recordID from the slotted page
     Dbt* data = block->get(recordId);
+
+    // Unmarshal the data
     ValueDict* row = this->unmarshal(data);
 
+    // Delete block and data to cleanup
+    delete block;
+    delete data;
+
+    // Check if there are column names, and return the row if there are none
     if (column_names == NULL) {
         return row;
     }
 
+    // There are column names, so traverse and return the values
     ValueDict* newRow = new ValueDict();
     for (Identifier columnName : *column_names) {
         newRow->insert({columnName, row->at(columnName)});
     }
-    return row;
+
+    // Cleanup old row
+    delete row;
+
+    // Return newRow
+    return newRow;
 }
