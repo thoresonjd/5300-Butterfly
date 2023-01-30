@@ -55,10 +55,10 @@ bool test_heap_storage()
     Handles* handles = table.select();
     std::cout << "select ok " << handles->size() << std::endl;
     ValueDict *result = table.project((*handles)[0]);
-    std::cout << "project ok" << std::endl;
 
     // Store values from the table
     Value valueA = (*result)["a"], valueB = (*result)["b"];
+    std::cout << "project ok" << std::endl;
 
     // Drop table and cleanup memory
     table.drop();
@@ -72,6 +72,7 @@ bool test_heap_storage()
     if (valueB.s != "Hello!")
         return false;
 
+    // Test passes if code gets to here
     return true;
 }
 
@@ -344,7 +345,7 @@ void HeapFile::drop(void)
 
     // Check result of remove operation and display error if file not removed
     if (dropResult != 0)
-        throw std::logic_error("Unabel to remove DB file");
+        throw std::logic_error("Unable to remove DB file");
 }
 
 void HeapFile::close(void)
@@ -365,7 +366,6 @@ SlottedPage* HeapFile::get(BlockID block_id)
 
     // Return new slotted page from the block
     return new SlottedPage(block, block_id);
-
 }
 
 void HeapFile::put(DbBlock *block)
@@ -510,13 +510,9 @@ ValueDict* HeapTable::unmarshal(Dbt *data) {
         }
     }
 
-    // Delete bytes array
-    delete[] bytes;
-
     // Return row
     return row;
 }
-
 
 void HeapTable::create() {
     this->file.create();    // Database file create
@@ -573,7 +569,6 @@ Handle HeapTable::append(const ValueDict *row) {
     // Add new block to file, return block and record ids
     this->file.put(block);
     return Handle(this->file.get_last_block_id(), recordId);
-
 }
 
 // Validate
@@ -655,7 +650,7 @@ ValueDict* HeapTable::project(Handle handle) {
 }
 
 // Project overload function
-ValueDict* HeapTable::project(Handle handle, const ColumnNames* column_names)
+ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names)
 {
     // Get the blockID of the first item in the handle
     BlockID blockId = handle.first;
@@ -671,6 +666,10 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames* column_names)
 
     // Unmarshal the data
     ValueDict* row = this->unmarshal(data);
+
+    // Delete block and data to cleanup
+    delete block;
+    delete data;
 
     // Check if there are column names, and return the row if there are none
     if (column_names == NULL) {
