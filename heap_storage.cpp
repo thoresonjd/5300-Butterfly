@@ -117,9 +117,7 @@ RecordID SlottedPage::add(const Dbt* data)
 // Get
 Dbt* SlottedPage::get(RecordID record_id)
 {
-    // size and loc based on passed in record_id
-    u16 size = get_n(4 * record_id);
-    u16 loc = get_n(4 * record_id + 2);
+    u16 size, loc;  // Hold size and location of record_id
 
     // get_header with all three variables
     get_header(size, loc, record_id);
@@ -693,5 +691,5 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames *column_names)
     delete row;
 
     // Return newRow
-    return newRow;
+    return row;
 }
