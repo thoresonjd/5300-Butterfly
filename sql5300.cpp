@@ -25,6 +25,8 @@ using namespace std;
 
 const char *DATABASE = "database.db";
 const unsigned int BLOCK_SZ = 4096;
+
+// Global database environment variable for storage engine
 DbEnv *_DB_ENV;
 
 // Configures the database environment.
@@ -80,7 +82,7 @@ int main(int argc, char *argv[])
     DbEnv env(0U);
     env.set_message_stream(&std::cout);
     env.set_error_stream(&std::cerr);
-        try {
+    try {
         env.open(dbDirectory, DB_CREATE | DB_INIT_MPOOL, 0);
     } catch (DbException &exc) {
         cerr << "(sql5300: " << exc.what() << ")";
@@ -109,11 +111,13 @@ int main(int argc, char *argv[])
         }
 
         // Parse sql statement
-        SQLParserResult* const parseTree = SQLParser::parseSQLString(input);
+        SQLParserResult* const parseTree = SQLParser::parseSQLString(input); // Probably need to delete parseTree?
         size_t ptSize = parseTree->size();
 
-        
-        if (parseTree->isValid()) {
+        // Check if parseTree is valid
+        if (parseTree->isValid()) 
+        {
+            // Traverse parseTree, and execute each statement
             for (size_t i = 0; i < ptSize; i++) {
                 const SQLStatement* sqlStatment = parseTree->getStatement(i);
                 cout << execute(sqlStatment) << endl;
@@ -123,13 +127,12 @@ int main(int argc, char *argv[])
         }
     }
 
-
     return EXIT_SUCCESS;
 }
 
-string execute(const SQLStatement* sqlStatement) {
-    string canonicalStatement = "";
-
+string execute(const SQLStatement* sqlStatement)
+{
+    // Call function based on passed in statement
     switch(sqlStatement->type()) {
         case kStmtCreate:
             return unparseCreate(dynamic_cast<const CreateStatement*>(sqlStatement));
@@ -140,16 +143,17 @@ string execute(const SQLStatement* sqlStatement) {
         default:
             return "";
     }
-
 }
 
 string unparseCreate(const CreateStatement* sqlStatement) 
 {
+    // Check if passed in statement is not a kTable create statement
     if (sqlStatement->type != CreateStatement::kTable)
     {
-        return "nothing";
+        return "";
     }
 
+    // String to define start of create statement
     string statement = "CREATE TABLE ";
 
     // Add " (" to statement
@@ -168,6 +172,7 @@ string unparseCreate(const CreateStatement* sqlStatement)
         // Convert column definition to string and append to statement
         statement.append(unparseColumn(col));
 
+        // Add comma if there are still statements to unparse
         if (i < columnSize - 1)
         {
             statement.append(", ");
@@ -181,13 +186,23 @@ string unparseCreate(const CreateStatement* sqlStatement)
 
 string unparseSelect(const SelectStatement* sqlStatement) {
     // Unparse SELECT statement
+    // String to define start of select statement
     string statement = "SELECT ";
+
+    // Get size, based on the number of items being selected
     size_t selectListSize = sqlStatement->selectList->size();
-    for (size_t i = 0; i < selectListSize; i++) {
+
+    // Loop through statement for the size of the statement
+    for (size_t i = 0; i < selectListSize; i++)
+    {
+        // Get select list item definition
         statement += unparseExpression(sqlStatement->selectList->at(i));
+        
+        // Add comma if there are still statements to unparse
         if (i < selectListSize - 1) {
             statement += ",";
         }
+
         statement += " ";
     }
 
