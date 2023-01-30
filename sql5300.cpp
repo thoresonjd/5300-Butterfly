@@ -23,6 +23,7 @@
 using namespace hsql;
 using namespace std;
 
+// Constants to store repeated variables
 const char *DATABASE = "database.db";
 const unsigned int BLOCK_SZ = 4096;
 
@@ -364,5 +365,5 @@ string unparseColumn(ColumnDefinition* col)
             break;
     }
 
-    return column;
+    return column; 
 }
