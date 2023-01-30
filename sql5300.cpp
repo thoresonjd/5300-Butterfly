@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
         }
 
         // Parse sql statement
-        SQLParserResult* const parseTree = SQLParser::parseSQLString(input); // Probably need to delete parseTree?
+        SQLParserResult* const parseTree = SQLParser::parseSQLString(input);
         size_t ptSize = parseTree->size();
 
         // Check if parseTree is valid
@@ -124,7 +124,12 @@ int main(int argc, char *argv[])
             }
         } else {
             cout << "Invalid SQL: " << input << endl;
+            
+            delete parseTree; // Free up memory when sql is invalid
         }
+
+        // Free up memory when parseTree is no longer needed.
+        delete parseTree;
     }
 
     return EXIT_SUCCESS;
@@ -250,7 +255,7 @@ string unparseOperatorExpr(Expr* expr)
         return "null";
     }
 
-    string operatorExpr = ""; // String to hold operator statement
+    string operatorExpr = ""; 
 
     // Append expression statement to string
     operatorExpr += unparseExpression(expr->expr);
@@ -279,8 +284,11 @@ string unparseOperatorExpr(Expr* expr)
     return operatorExpr;
 }
 
-string unparseTableRef(TableRef* tableRef) {
-    string tableExpression = "";
+string unparseTableRef(TableRef* tableRef) 
+{
+    string tableExpression = "";    // String to hold table statement
+    
+    // Append string based on table reference
     switch(tableRef->type) {
         case kTableName:
             tableExpression += tableRef->name;
@@ -307,10 +315,10 @@ string unparseTableRef(TableRef* tableRef) {
 }
 
 string unparseJoin(JoinDefinition* joinDefinition) {
-    // left table
+    // left table string
     string joinStatement = unparseTableRef(joinDefinition->left);
 
-    // add join type
+    // Append string based on add join type
     switch(joinDefinition->type) {
         case kJoinLeft:
             joinStatement += " LEFT JOIN ";
@@ -331,13 +339,15 @@ string unparseJoin(JoinDefinition* joinDefinition) {
         joinStatement += " ON ";
         joinStatement += unparseExpression(joinDefinition->condition);
     }
+
     return joinStatement;
 }
 
 string unparseColumn(ColumnDefinition* col)
 {
-    string column(col->name);
+    string column(col->name);   // String to hold column name
 
+    // Append column string based on definition
     switch (col->type)
     {
         case ColumnDefinition::DOUBLE:
