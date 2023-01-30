@@ -136,10 +136,8 @@ string execute(const SQLStatement* sqlStatement)
     switch(sqlStatement->type()) {
         case kStmtCreate:
             return unparseCreate(dynamic_cast<const CreateStatement*>(sqlStatement));
-            break;
         case kStmtSelect:
             return unparseSelect(dynamic_cast<const SelectStatement*>(sqlStatement));
-            break;
         default:
             return "";
     }
@@ -219,7 +217,9 @@ string unparseSelect(const SelectStatement* sqlStatement) {
     return statement;
 }
 
-string unparseExpression(Expr* expr) {
+string unparseExpression(Expr* expr)
+{
+    // Call function based on passed in Expr
     switch (expr->type) {
         case kExprLiteralFloat:
             return to_string(expr->fval);
@@ -243,15 +243,19 @@ string unparseExpression(Expr* expr) {
     }
 }
 
-string unparseOperatorExpr(Expr* expr) {
+string unparseOperatorExpr(Expr* expr)
+{
+    // Check if passed in Expr is NULL
     if (expr == NULL) {
         return "null";
     }
 
-    string operatorExpr = "";
+    string operatorExpr = ""; // String to hold operator statement
 
+    // Append expression statement to string
     operatorExpr += unparseExpression(expr->expr);
 
+    // Append string based on expression operator type
     switch (expr->opType) {
         case Expr::AND:
             operatorExpr += "AND";
@@ -267,6 +271,7 @@ string unparseOperatorExpr(Expr* expr) {
             operatorExpr += "";
     }
 
+    // Check if expr2 is not null to continue unparsing expressions
     if (expr->expr2 != NULL) {
         operatorExpr += " " + unparseExpression(expr->expr2);
     }
