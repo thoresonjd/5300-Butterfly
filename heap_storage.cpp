@@ -115,15 +115,21 @@ RecordID SlottedPage::add(const Dbt* data)
 }
 
 // Get
-Dbt* SlottedPage::get(RecordID record_id) {
-    u16 size, loc;
+Dbt* SlottedPage::get(RecordID record_id)
+{
+    // size and loc based on passed in record_id
+    u16 size = get_n(4 * record_id);
+    u16 loc = get_n(4 * record_id + 2);
+
+    // get_header with all three variables
     get_header(size, loc, record_id);
 
+    // If loc is zero, return NULL
     if (loc == 0) {
         return NULL;
     }
 
-    // TODO: I think this is right but not sure
+    // Return new Dbt based on loc and size
     return new Dbt(this->address(loc), size);
 }
 
