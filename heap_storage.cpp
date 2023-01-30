@@ -20,6 +20,7 @@ typedef u_int16_t u16;
 */
 bool test_heap_storage() 
 {
+    // Setup for table column names and attributes
     ColumnNames column_names;
 	column_names.push_back("a");
 	column_names.push_back("b");
@@ -28,6 +29,8 @@ bool test_heap_storage()
 	column_attributes.push_back(ca);
 	ca.set_data_type(ColumnAttribute::TEXT);
 	column_attributes.push_back(ca);
+
+    // Test create and drop of table
     HeapTable table1("_test_create_drop_cpp", column_names, column_attributes);
     table1.create();
     std::cout << "create ok" << std::endl;
@@ -35,54 +38,79 @@ bool test_heap_storage()
     table1.drop();  
     std::cout << "drop ok" << std::endl;
     
+    // Test create table if table does not exist
     HeapTable table("_test_data_cpp", column_names, column_attributes);
     table.create_if_not_exists();
     std::cout << "create_if_not_exsts ok" << std::endl;
 
+    // Insert rows into table
     ValueDict row;
     row["a"] = Value(12);
     row["b"] = Value("Hello!");
     std::cout << "try insert" << std::endl;
     table.insert(&row);
     std::cout << "insert ok" << std::endl;
+    
+    // Select and project rows in the table
     Handles* handles = table.select();
     std::cout << "select ok " << handles->size() << std::endl;
     ValueDict *result = table.project((*handles)[0]);
+
+    // Store values from the table
+    Value valueA = (*result)["a"], valueB = (*result)["b"];
     std::cout << "project ok" << std::endl;
-    Value value = (*result)["a"];
-    if (value.n != 12)
-    	return false;
-    value = (*result)["b"];
-    if (value.s != "Hello!")
-		return false;
+
+    // Drop table and cleanup memory
     table.drop();
+    delete handles;
+    delete result;
+
+    // Test stored values from projection
+    if (valueA.n != 12)
+        return false;
+    
+    if (valueB.s != "Hello!")
+        return false;
 
     return true;
 }
 
 // ---- SlottedPage methods ---- // 
 // Constructor
-SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new) : DbBlock(block, block_id, is_new) {
+SlottedPage::SlottedPage(Dbt &block, BlockID block_id, bool is_new) : DbBlock(block, block_id, is_new)
+{
+    // Check is_new flag
     if (is_new) {
+        // Set number of records and end_free
         this->num_records = 0;
         this->end_free = DbBlock::BLOCK_SZ - 1;
+        
+        // Create block header
         put_header();
     } else {
+        // Get the header of the existing slotted page
         get_header(this->num_records, this->end_free);
     }
 }
 
 // Add a new record to the block. Return its id.
-RecordID SlottedPage::add(const Dbt* data) {
+RecordID SlottedPage::add(const Dbt* data)
+{
+    // Check if the slotted page has room
     if (!has_room(data->get_size()))
         throw DbBlockNoRoomError("not enough room for new record");
-    u16 id = ++this->num_records;
-    u16 size = (u16) data->get_size();
-    this->end_free -= size;
-    u16 loc = this->end_free + 1;
-    put_header();
-    put_header(id, size, loc);
+    
+    u16 id = ++this->num_records;   // Current id based on number of reccords
+    u16 size = (u16) data->get_size();  // Current size
+    this->end_free -= size;         // Setting the free end
+    u16 loc = this->end_free + 1;   // Setting the location
+    
+    put_header();               // Update block header
+    put_header(id, size, loc);  // Update
+
+    // Memory copy of data
     memcpy(this->address(loc), data->get_data(), size);
+    
     return id;
 }
 
@@ -220,7 +248,6 @@ void SlottedPage::slide(u16 start, u16 end)
 
 
 // ---- HeapFile methods ---- // 
-
 
 // Allocate a new block for the database file.
 // Returns the new empty DbBlock that is managing the records in this block and its block id.
