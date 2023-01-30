@@ -135,7 +135,10 @@ Dbt* SlottedPage::get(RecordID record_id)
 
 // Delete
 void SlottedPage::del(RecordID record_id) {
-    u16 size, loc;
+    u16 size, loc;  // Hold size and location of record_id
+
+    // get header for the record_id, put an empty header in its place,
+    // and slide the location of the old record
     this->get_header(size, loc, record_id);
     this->put_header(record_id, 0, 0);
     this->slide(loc, loc + size);
@@ -143,36 +146,55 @@ void SlottedPage::del(RecordID record_id) {
 
 // Put
 void SlottedPage::put(RecordID record_id, const Dbt &data) {
-    u16 size, loc;
+    u16 size, loc;  // Hold size and location of record_id
+
+    // Get the header for the record_id, and set a new_size based on the size
+    // of the passed in data
     get_header(size, loc, record_id);
     u16 new_size = (u16) data.get_size();
 
+    // Compare the two sizes of data
     if (new_size > size) {
+        // Calculate the remainder
         u16 extra = new_size - size;
+
+        // Check if the slotted page has room for the new data
         if (!this->has_room(extra)) {
             throw DbBlockNoRoomError("not enough room in block");
         }
+
+        // Slide the old data and memcopy the address and data
         this->slide(loc + new_size, loc + size);
         memcpy(this->address(loc - extra), data.get_data(), loc + new_size);
     } else {
+        // Assume there is enough room
+        // Slide the old data and memcopy the address and data
         memcpy(this->address(loc - new_size), data.get_data(), loc + new_size);
         this->slide(loc + new_size, loc + size);
     }
 
+    // Update the header and put it back in the slotted page
     get_header(size, loc, record_id);
     this->put_header(record_id, new_size, loc);
 }
 
 // Get ids
 RecordIDs* SlottedPage::ids(void) {
-    RecordIDs* recordIds = new RecordIDs();
+    RecordIDs* recordIds = new RecordIDs(); // New recordID list object
+
+    // Traverse through number of records
     for (u16 i = 1; i <= this->num_records; i++) {
+        // Get size and location from header
         u16 size, loc;
         get_header(size, loc, i);
+
+        // When location is not zero, push i to list
         if (loc != 0) {
             recordIds->push_back(i);
         }
     }
+
+    // Return recordIds list
     return recordIds;
 }
 
@@ -216,14 +238,16 @@ bool SlottedPage::has_room(u16 size) {
 
 void SlottedPage::slide(u16 start, u16 end) 
 {
-    // TODO
+    // Calcuate the differnece between the start and end
     int delta = end - start;
 
+    // Return if the difference is zero
     if (delta == 0)
     {
         return;
     }
 
+    // Set new variables for move location, size, and new location
     u16 moveLoc = this->end_free + 1;
     u16 moveSize =  start - moveLoc;
     u16 newLoc = moveLoc + delta;
@@ -248,6 +272,7 @@ void SlottedPage::slide(u16 start, u16 end)
     // Update end_free
     this->end_free += delta;
 
+    // Update header
     this->put_header();
 }
 
