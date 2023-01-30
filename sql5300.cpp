@@ -255,7 +255,7 @@ string unparseOperatorExpr(Expr* expr)
         return "null";
     }
 
-    string operatorExpr = ""; 
+    string operatorExpr = ""; // String to hold operator statement
 
     // Append expression statement to string
     operatorExpr += unparseExpression(expr->expr);
