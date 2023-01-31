@@ -36,4 +36,4 @@ To test the program, enter `SQL> test` at the prompt. This will run the `test_he
 If there are any issues, first try clearing out files from your database environment.
 
 ### Handoff
-https://seattleu.instructuremedia.com/embed/45579d45-20d7-405c-8cd3-4851fb004d18
+[Handoff video](https://seattleu.instructuremedia.com/embed/45579d45-20d7-405c-8cd3-4851fb004d18)
