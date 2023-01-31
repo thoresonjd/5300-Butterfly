@@ -6,7 +6,7 @@ It utilizes the [Hyrise SQL Parser for C++](https://github.com/hyrise/sql-parser
 
 A relation manager is part of a full DBMS and is the core of the system, and this project will be able to handle some simple queries.
 
-## **Sprint Verano**
+## **Sprint Verano** 
 
 ### Team:
 Bobby Brown and Denis Rajic
