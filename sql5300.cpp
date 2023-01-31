@@ -125,8 +125,6 @@ int main(int argc, char *argv[])
             }
         } else {
             cout << "Invalid SQL: " << input << endl;
-            
-            delete parseTree; // Free up memory when sql is invalid
         }
 
         // Free up memory when parseTree is no longer needed.
