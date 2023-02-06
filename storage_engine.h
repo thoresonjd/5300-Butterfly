@@ -7,6 +7,7 @@
  * @author Kevin Lundeen
  * @see "Seattle University, CPSC5300, Winter 2023"
  */
+
 #pragma once
 
 #include <exception>
