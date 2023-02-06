@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <string>
 #include "storage_engine.h"
 
 
@@ -29,17 +30,8 @@ class SlottedPage : public DbBlock {
 public:
     SlottedPage(Dbt& block, BlockID block_id, bool is_new = false);
 
-    // Big 5 - we only need the destructor, copy-ctor, move-ctor, and op= are unnecessary
-    // but we delete them explicitly just to make sure we don't use them accidentally
+     // Big 5 - use the defaults
     virtual ~SlottedPage() {}
-
-    SlottedPage(const SlottedPage& other) = delete;
-
-    SlottedPage(SlottedPage&& temp) = delete;
-
-    SlottedPage& operator=(const SlottedPage& other) = delete;
-
-    SlottedPage& operator=(SlottedPage& temp) = delete;
 
     /**
      * Adds a new record to a slotted page
@@ -83,7 +75,7 @@ protected:
      * @param loc The location (offset) of the record
      * @param id The ID of the record
      */
-    virtual void get_header(u_int16_t& size, u_int16_t& loc, RecordID id = 0) const;
+    void get_header(u_int16_t& size, u_int16_t& loc, RecordID id = 0) const;
 
     /**
      * Store the size and offset for given ID. For ID = 0, store the block header.
@@ -91,14 +83,14 @@ protected:
      * @param size The size of the record
      * @param loc The location (offset) of the record
      */
-    virtual void put_header(RecordID id = 0, u_int16_t size = 0, u_int16_t loc = 0);
+    void put_header(RecordID id = 0, u_int16_t size = 0, u_int16_t loc = 0);
 
     /**
      * Checks the slotted page if there is enough free memory to add a new record
      * @param size The size of the new record
      * @return True if the record can fit into the slotted page, false otherwise
      */
-    virtual bool has_room(u_int16_t size) const;
+    bool has_room(u_int16_t size) const;
 
     /**
      * If start < end, then remove data from offset start up to but not including
@@ -115,17 +107,17 @@ protected:
     /** 
      * Get 2-byte integer at given offset in block.
      */ 
-    virtual u_int16_t get_n(u_int16_t offset) const;
+    u_int16_t get_n(u_int16_t offset) const;
 
     /** 
      * Put a 2-byte integer at given offset in block.
      */
-    virtual void put_n(u_int16_t offset, u_int16_t n);
+    void put_n(u_int16_t offset, u_int16_t n);
 
     /** 
      * Make a void* pointer for a given offset into the data block.
      */
-    virtual void *address(u_int16_t offset) const;
+    void* address(u_int16_t offset) const;
 
     friend bool test_slotted_page();
 };

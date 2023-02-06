@@ -3,6 +3,8 @@
  * @author K Lundeen
  * @see Seattle University, CPSC5300
  */
+
+#include <string>
 #include <cstring>
 #include "db_cxx.h"
 #include "HeapFile.h"
@@ -10,7 +12,7 @@
 using u16 = u_int16_t;
 using u32 = u_int32_t;
 
-HeapFile::HeapFile(string name) : DbFile(name), dbfilename(""), last(0), closed(true), db(_DB_ENV, 0) {
+HeapFile::HeapFile(std::string name) : DbFile(name), dbfilename(""), last(0), closed(true), db(_DB_ENV, 0) {
     this->dbfilename = this->name + ".db";
 }
 

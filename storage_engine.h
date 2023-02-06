@@ -71,7 +71,7 @@ public:
      * @param record_id  which record to fetch
      * @returns          the data stored for the given record
      */
-    virtual Dbt* get(RecordID record_id) = 0;
+    virtual Dbt* get(RecordID record_id) const = 0;
 
     /**
      * Change the data stored for a record in this block.

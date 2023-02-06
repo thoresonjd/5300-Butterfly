@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <string>
 #include "storage_engine.h"
 #include "SlottedPage.h"
 #include "HeapFile.h"
@@ -107,6 +108,8 @@ public:
      */
     virtual ValueDict* project(Handle handle, const ColumnNames* column_names);
 
+    using DbRelation::project;
+
 protected:
     HeapFile file;
 
@@ -150,7 +153,7 @@ protected:
  * @param a column value
  * @param b column value
  */
-void test_set_row(ValueDict &row, int a, string b);
+void test_set_row(ValueDict& row, int a, std::string b);
 
 /**
  * Test helper. Compares row to expected values for columns a and b.
@@ -160,7 +163,7 @@ void test_set_row(ValueDict &row, int a, string b);
  * @param b        expected column value
  * @return         true if actual == expected for both columns, false otherwise
  */
-bool test_compare(DbRelation &table, Handle handle, int a, string b);
+bool test_compare(DbRelation& table, Handle handle, int a, std::string b);
 
 /**
  * Testing function for heap storage engine.

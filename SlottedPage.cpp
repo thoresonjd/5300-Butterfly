@@ -133,17 +133,17 @@ void SlottedPage::put_n(u16 offset, u16 n) {
     *(u16 *) this->address(offset) = n;
 }
 
-void *SlottedPage::address(u16 offset) const {
+void* SlottedPage::address(u16 offset) const {
     return (void *) ((char *) this->block.get_data() + offset);
 }
 
-bool assertion_failure(string message, double x, double y) {
-    cout << "FAILED TEST: " << message;
+bool assertion_failure(std::string message, double x, double y) {
+    std::cout << "FAILED TEST: " << message;
     if (x >= 0)
-        cout << " " << x;
+        std::cout << " " << x;
     if (y >= 0)
-        cout << " " << y;
-    cout << endl;
+        std::cout << " " << y;
+    std::cout << std::endl;
     return false;
 }
 
@@ -162,8 +162,8 @@ bool test_slotted_page() {
 
     // get it back
     Dbt *get_dbt = slot.get(id);
-    string expected(rec1, sizeof(rec1));
-    string actual((char *) get_dbt->get_data(), get_dbt->get_size());
+    std::string expected(rec1, sizeof(rec1));
+    std::string actual((char *) get_dbt->get_data(), get_dbt->get_size());
     delete get_dbt;
     if (expected != actual)
         return assertion_failure("get 1 back " + actual);
@@ -177,8 +177,8 @@ bool test_slotted_page() {
 
     // get it back
     get_dbt = slot.get(id);
-    expected = string(rec2, sizeof(rec2));
-    actual = string((char *) get_dbt->get_data(), get_dbt->get_size());
+    expected = std::string(rec2, sizeof(rec2));
+    actual = std::string((char *) get_dbt->get_data(), get_dbt->get_size());
     delete get_dbt;
     if (expected != actual)
         return assertion_failure("get 2 back " + actual);
@@ -189,14 +189,14 @@ bool test_slotted_page() {
     slot.put(1, rec1_dbt);
     // check both rec2 and rec1 after expanding put
     get_dbt = slot.get(2);
-    expected = string(rec2, sizeof(rec2));
-    actual = string((char *) get_dbt->get_data(), get_dbt->get_size());
+    expected = std::string(rec2, sizeof(rec2));
+    actual = std::string((char *) get_dbt->get_data(), get_dbt->get_size());
     delete get_dbt;
     if (expected != actual)
         return assertion_failure("get 2 back after expanding put of 1 " + actual);
     get_dbt = slot.get(1);
-    expected = string(rec1_rev, sizeof(rec1_rev));
-    actual = string((char *) get_dbt->get_data(), get_dbt->get_size());
+    expected = std::string(rec1_rev, sizeof(rec1_rev));
+    actual = std::string((char *) get_dbt->get_data(), get_dbt->get_size());
     delete get_dbt;
     if (expected != actual)
         return assertion_failure("get 1 back after expanding put of 1 " + actual);
@@ -206,14 +206,14 @@ bool test_slotted_page() {
     slot.put(1, rec1_dbt);
     // check both rec2 and rec1 after contracting put
     get_dbt = slot.get(2);
-    expected = string(rec2, sizeof(rec2));
-    actual = string((char *) get_dbt->get_data(), get_dbt->get_size());
+    expected = std::string(rec2, sizeof(rec2));
+    actual = std::string((char *) get_dbt->get_data(), get_dbt->get_size());
     delete get_dbt;
     if (expected != actual)
         return assertion_failure("get 2 back after contracting put of 1 " + actual);
     get_dbt = slot.get(1);
-    expected = string(rec1, sizeof(rec1));
-    actual = string((char *) get_dbt->get_data(), get_dbt->get_size());
+    expected = std::string(rec1, sizeof(rec1));
+    actual = std::string((char *) get_dbt->get_data(), get_dbt->get_size());
     delete get_dbt;
     if (expected != actual)
         return assertion_failure("get 1 back after contracting put of 1 " + actual);
@@ -245,16 +245,16 @@ bool test_slotted_page() {
     }
 
     // more volume
-    string gettysburg = "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.";
+    std::string gettysburg = "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.";
     int32_t n = -1;
     uint16_t text_length = gettysburg.size();
     uint total_size = sizeof(n) + sizeof(text_length) + text_length;
-    char *data = new char[total_size];
+    char* data = new char[total_size];
     *(int32_t *) data = n;
     *(uint16_t *) (data + sizeof(n)) = text_length;
-    memcpy(data + sizeof(n) + sizeof(text_length), gettysburg.c_str(), text_length);
+    std::memcpy(data + sizeof(n) + sizeof(text_length), gettysburg.c_str(), text_length);
     Dbt dbt(data, total_size);
-    vector<SlottedPage> page_list;
+    std::vector<SlottedPage> page_list;
     BlockID block_id = 1;
     Dbt slot_dbt(new char[DbBlock::BLOCK_SZ], DbBlock::BLOCK_SZ);
     slot = SlottedPage(slot_dbt, block_id++, true);
@@ -276,7 +276,7 @@ bool test_slotted_page() {
             if (record->get_size() != total_size)
                 return assertion_failure("more volume wrong size", block_id - 1, id);
             void *stored = record->get_data();
-            if (memcmp(stored, data, total_size) != 0)
+            if (std::memcmp(stored, data, total_size) != 0)
                 return assertion_failure("more volume wrong data", block_id - 1, id);
             delete record;
         }

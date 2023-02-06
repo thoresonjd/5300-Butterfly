@@ -96,7 +96,7 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames* column_names) {
     if (column_names->empty())
         return row;
     ValueDict* result = new ValueDict();
-    for (Identifier& column_name: this->column_names) {
+    for (auto const& column_name: this->column_names) {
         if (row->find(column_name) == row->end())
             throw DbRelationError("table does not have column named '" + column_name + "'");
         (*result)[column_name] = (*row)[column_name];
@@ -107,7 +107,7 @@ ValueDict* HeapTable::project(Handle handle, const ColumnNames* column_names) {
 
 ValueDict* HeapTable::validate(const ValueDict* row) const {
     ValueDict* full_row = new ValueDict();
-    for (Identifier& column_name: this->column_names) {
+    for (auto const& column_name: this->column_names) {
         Value value;
         ValueDict::const_iterator column = row->find(column_name);
         if (column == row->end())
@@ -142,7 +142,7 @@ Dbt* HeapTable::marshal(const ValueDict* row) const {
     char* bytes = new char[DbBlock::BLOCK_SZ]; // more than we need (we insist that one row fits into DbBlock::BLOCK_SZ)
     uint offset = 0;
     uint col_num = 0;
-    for (Identifier& column_name: this->column_names) {
+    for (auto const& column_name: this->column_names) {
         ColumnAttribute ca = this->column_attributes[col_num++];
         ValueDict::const_iterator column = row->find(column_name);
         Value value = column->second;
@@ -178,7 +178,7 @@ ValueDict* HeapTable::unmarshal(Dbt* data) const {
     char* bytes = (char*)data->get_data();
     uint offset = 0;
     uint col_num = 0;
-    for (Identifier& column_name: this->column_names) {
+    for (auto const& column_name: this->column_names) {
         ColumnAttribute ca = this->column_attributes[col_num++];
         value.data_type = ca.get_data_type();
         if (ca.get_data_type() == ColumnAttribute::DataType::INT) {
@@ -190,7 +190,7 @@ ValueDict* HeapTable::unmarshal(Dbt* data) const {
             char buffer[DbBlock::BLOCK_SZ];
             std::memcpy(buffer, bytes + offset, size);
             buffer[size] = '\0';
-            value.s = string(buffer);  // assume ascii for now
+            value.s = std::string(buffer);  // assume ascii for now
             offset += size;
         } else {
             throw DbRelationError("Only know how to unmarshal INT and TEXT");
@@ -213,7 +213,7 @@ bool HeapTable::selected(Handle handle, const ValueDict* where) {
  * @param a column value
  * @param b column value
  */
-void test_set_row(ValueDict &row, int a, string b) {
+void test_set_row(ValueDict &row, int a, std::string b) {
     row["a"] = Value(a);
     row["b"] = Value(b);
 }
@@ -226,7 +226,7 @@ void test_set_row(ValueDict &row, int a, string b) {
  * @param b        expected column value
  * @return         true if actual == expected for both columns, false otherwise
  */
-bool test_compare(DbRelation &table, Handle handle, int a, string b) {
+bool test_compare(DbRelation &table, Handle handle, int a, std::string b) {
     ValueDict *result = table.project(handle);
     Value value = (*result)["a"];
     if (value.n != a) {
@@ -245,7 +245,7 @@ bool test_compare(DbRelation &table, Handle handle, int a, string b) {
 bool test_heap_storage() {
     if (!test_slotted_page())
         return assertion_failure("slotted page tests failed");
-    cout << endl << "slotted page tests ok" << endl;
+    std::cout << std::endl << "slotted page tests ok" << std::endl;
 
     ColumnNames column_names;
     column_names.push_back("a");
@@ -258,23 +258,23 @@ bool test_heap_storage() {
 
     HeapTable table1("_test_create_drop_cpp", column_names, column_attributes);
     table1.create();
-    cout << "create ok" << endl;
+    std::cout << "create ok" << std::endl;
     table1.drop();  // drop makes the object unusable because of BerkeleyDB restriction -- maybe want to fix this some day
-    cout << "drop ok" << endl;
+    std::cout << "drop ok" << std::endl;
 
     HeapTable table("_test_data_cpp", column_names, column_attributes);
     table.create_if_not_exists();
-    cout << "create_if_not_exists ok" << endl;
+    std::cout << "create_if_not_exists ok" << std::endl;
 
     ValueDict row;
-    string b = "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.";
+    std::string b = "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.";
     test_set_row(row, -1, b);
     table.insert(&row);
-    cout << "insert ok" << endl;
-    Handles *handles = table.select();
+    std::cout << "insert ok" << std::endl;
+    Handles* handles = table.select();
     if (!test_compare(table, (*handles)[0], -1, b))
         return false;
-    cout << "select/project ok " << handles->size() << endl;
+    std::cout << "select/project ok " << handles->size() << std::endl;
     delete handles;
 
     Handle last_handle;
@@ -290,7 +290,7 @@ bool test_heap_storage() {
         if (!test_compare(table, handle, i++, b))
             return false;
     }
-    cout << "many inserts/select/projects ok" << endl;
+    std::cout << "many inserts/select/projects ok" << std::endl;
     delete handles;
 
     table.del(last_handle);
@@ -302,7 +302,7 @@ bool test_heap_storage() {
         if (!test_compare(table, handle, i++, b))
             return false;
     }
-    cout << "del ok" << endl;
+    std::cout << "del ok" << std::endl;
     table.drop();
     delete handles;
     return true;
