@@ -65,7 +65,7 @@ bool ParseTreeToString::is_reserved_word(string candidate) {
     return false;
 }
 
-string ParseTreeToString::operator_expression(const Expr *expr) {
+string ParseTreeToString::operator_expression(const Expr* expr) {
     if (!expr)
         return "null";
 
@@ -92,7 +92,7 @@ string ParseTreeToString::operator_expression(const Expr *expr) {
     return ret;
 }
 
-string ParseTreeToString::expression(const Expr *expr) {
+string ParseTreeToString::expression(const Expr* expr) {
     string ret;
     switch (expr->type) {
         case kExprStar:
@@ -125,7 +125,7 @@ string ParseTreeToString::expression(const Expr *expr) {
     return ret;
 }
 
-string ParseTreeToString::table_ref(const TableRef *table) {
+string ParseTreeToString::table_ref(const TableRef* table) {
     string ret;
     switch (table->type) {
         case kTableSelect:
@@ -173,7 +173,7 @@ string ParseTreeToString::table_ref(const TableRef *table) {
     return ret;
 }
 
-string ParseTreeToString::column_definition(const ColumnDefinition *col) {
+string ParseTreeToString::column_definition(const ColumnDefinition* col) {
     string ret(col->name);
     switch (col->type) {
         case ColumnDefinition::DOUBLE:
@@ -192,7 +192,7 @@ string ParseTreeToString::column_definition(const ColumnDefinition *col) {
     return ret;
 }
 
-string ParseTreeToString::select(const SelectStatement *stmt) {
+string ParseTreeToString::select(const SelectStatement* stmt) {
     string ret("SELECT ");
     bool doComma = false;
     for (Expr *expr : *stmt->selectList) {
@@ -207,11 +207,11 @@ string ParseTreeToString::select(const SelectStatement *stmt) {
     return ret;
 }
 
-string ParseTreeToString::insert(const InsertStatement *stmt) {
+string ParseTreeToString::insert(const InsertStatement* stmt) {
     return "INSERT ...";
 }
 
-string ParseTreeToString::create(const CreateStatement *stmt) {
+string ParseTreeToString::create(const CreateStatement* stmt) {
     string ret("CREATE ");
     if (stmt->type != CreateStatement::kTable)
         return ret + "...";
@@ -230,7 +230,7 @@ string ParseTreeToString::create(const CreateStatement *stmt) {
     return ret;
 }
 
-string ParseTreeToString::drop(const DropStatement *stmt) {
+string ParseTreeToString::drop(const DropStatement* stmt) {
     string ret("DROP ");
     switch (stmt->type) {
         case DropStatement::kTable:
@@ -243,7 +243,7 @@ string ParseTreeToString::drop(const DropStatement *stmt) {
     return ret;
 }
 
-string ParseTreeToString::show(const ShowStatement *stmt) {
+string ParseTreeToString::show(const ShowStatement* stmt) {
     string ret("SHOW ");
     switch (stmt->type) {
         case ShowStatement::kTables:
@@ -262,19 +262,18 @@ string ParseTreeToString::show(const ShowStatement *stmt) {
     return ret;
 }
 
-string ParseTreeToString::statement(const SQLStatement *stmt) {
+string ParseTreeToString::statement(const SQLStatement* stmt) {
     switch (stmt->type()) {
         case kStmtSelect:
-            return select((const SelectStatement *) stmt);
+            return select((const SelectStatement*) stmt);
         case kStmtInsert:
-            return insert((const InsertStatement *) stmt);
+            return insert((const InsertStatement*) stmt);
         case kStmtCreate:
-            return create((const CreateStatement *) stmt);
+            return create((const CreateStatement*) stmt);
         case kStmtDrop:
-            return drop((const DropStatement *) stmt);
+            return drop((const DropStatement*) stmt);
         case kStmtShow:
-            return show((const ShowStatement *) stmt);
-
+            return show((const ShowStatement*) stmt);
         case kStmtError:
         case kStmtImport:
         case kStmtUpdate:

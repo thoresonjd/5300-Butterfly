@@ -19,7 +19,7 @@ public:
      * @param statement  Hyrise AST pointer
      * @returns          string of the SQL statement equivalent to what was parsed
      */
-    static std::string statement(const hsql::SQLStatement *statement);
+    static std::string statement(const hsql::SQLStatement* statement);
 
     /**
      * Check if a given word is a reserved word in our version of SQL.
@@ -31,22 +31,22 @@ private:
     static const std::vector<std::string> reserved_words;
 
     // sub-expressions
-    static std::string operator_expression(const hsql::Expr *expr);
+    static std::string operator_expression(const hsql::Expr* expr);
 
-    static std::string expression(const hsql::Expr *expr);
+    static std::string expression(const hsql::Expr* expr);
 
-    static std::string table_ref(const hsql::TableRef *table);
+    static std::string table_ref(const hsql::TableRef* table);
 
-    static std::string column_definition(const hsql::ColumnDefinition *col);
+    static std::string column_definition(const hsql::ColumnDefinition* col);
 
-    static std::string select(const hsql::SelectStatement *stmt);
+    static std::string select(const hsql::SelectStatement* stmt);
 
-    static std::string insert(const hsql::InsertStatement *stmt);
+    static std::string insert(const hsql::InsertStatement* stmt);
 
-    static std::string create(const hsql::CreateStatement *stmt);
+    static std::string create(const hsql::CreateStatement* stmt);
 
-    static std::string drop(const hsql::DropStatement *stmt);
+    static std::string drop(const hsql::DropStatement* stmt);
 
-    static std::string show(const hsql::ShowStatement *stmt);
+    static std::string show(const hsql::ShowStatement* stmt);
 };
 
