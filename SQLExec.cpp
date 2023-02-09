@@ -125,9 +125,27 @@ QueryResult* SQLExec::create(const CreateStatement* statement) {
     return new QueryResult(string("created ") + statement->tableName);
 }
 
-// DROP ...
 QueryResult* SQLExec::drop(const DropStatement* statement) {
-    return new QueryResult("not implemented"); // FIXME
+    if (statement->type != DropStatement::kTable)
+        throw SQLExecError("unrecognized DROP type");
+    
+    // get table name
+    Identifier table_name = statement->name;
+    ValueDict where = {{"table_name", Value(table_name)}};
+
+    // remove columns    
+    DbRelation& columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
+    Handles* rows = columns.select(&where);
+    for (auto const& row : *rows)
+        columns.del(row);
+    delete rows;
+
+    // remove table
+    DbRelation& table = SQLExec::tables->get_table(table_name);
+    table.drop();
+    SQLExec::tables->del(*SQLExec::tables->select(&where)->begin());
+
+    return new QueryResult(string("dropped ") + table_name);    
 }
 
 QueryResult* SQLExec::show(const ShowStatement* statement) {
