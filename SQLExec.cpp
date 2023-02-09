@@ -67,13 +67,52 @@ QueryResult *SQLExec::execute(const SQLStatement* statement) {
     }
 }
 
-void
-SQLExec::column_definition(const ColumnDefinition* col, Identifier& column_name, ColumnAttribute& column_attribute) {
+void SQLExec::column_definition(const ColumnDefinition* col, Identifier& column_name, ColumnAttribute& column_attribute) {
     throw SQLExecError("not implemented");  // FIXME
 }
 
 QueryResult* SQLExec::create(const CreateStatement* statement) {
-    return new QueryResult("not implemented"); // FIXME
+    // update _tables schema
+    ValueDict row = {{"table_name", Value(statement->tableName)}};
+    Handle tableHandle = SQLExec::tables->insert(&row);
+    try {
+        // update _columns schema
+        Handles columnHandles;
+        DbRelation& columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
+        try {
+            for (auto const& column : *statement->columns) {
+                Identifier cn;
+                ColumnAttribute ca;
+                column_definition(column, cn, ca);
+                std::string type = ca.get_data_type() == ColumnAttribute::DataType::TEXT ? "TEXT" : "INT";
+                ValueDict row = {
+                    {"table_name", Value(statement->tableName)},
+                    {"column_name", Value(cn)},
+                    {"data_type", Value(type)}
+                };
+                columnHandles.push_back(columns.insert(&row));
+            }
+
+            // create table
+            DbRelation& table = SQLExec::tables->get_table(statement->tableName);
+            table.create();
+        } catch (std::exception& e) {
+            // attempt to undo the insertions into _columns
+            try {
+                for (Handle& columnHandle : columnHandles)
+                    columns.del(columnHandle);
+            } catch (std::exception &e) {}
+            throw new std::exception;
+        }
+    } catch (std::exception &e) {
+        // attempt to undo the insertion into _tables
+        try {
+            SQLExec::tables->del(tableHandle);
+        } catch (std::exception& e) {}
+        throw new std::exception;
+    }
+
+    return new QueryResult(string("created ") + statement->tableName);
 }
 
 // DROP ...

@@ -3,9 +3,9 @@
  * @author Kevin Lundeen
  * @see "Seattle University, CPSC5300, Winter 2023"
  */
+
 #include "schema_tables.h"
 #include "ParseTreeToString.h"
-
 
 void initialize_schema_tables() {
     Tables tables;
@@ -132,7 +132,7 @@ void Tables::get_columns(Identifier table_name, ColumnNames &column_names, Colum
 }
 
 // Return a table for given table_name.
-DbRelation &Tables::get_table(Identifier table_name) {
+DbRelation& Tables::get_table(Identifier table_name) {
     // if they are asking about a table we've once constructed, then just return that one
     if (Tables::table_cache.find(table_name) != Tables::table_cache.end())
         return *Tables::table_cache[table_name];
@@ -141,7 +141,7 @@ DbRelation &Tables::get_table(Identifier table_name) {
     ColumnNames column_names;
     ColumnAttributes column_attributes;
     get_columns(table_name, column_names, column_attributes);
-    DbRelation *table = new HeapTable(table_name, column_names, column_attributes);
+    DbRelation* table = new HeapTable(table_name, column_names, column_attributes);
     Tables::table_cache[table_name] = table;
     return *table;
 }
