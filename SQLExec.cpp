@@ -68,7 +68,17 @@ QueryResult *SQLExec::execute(const SQLStatement* statement) {
 }
 
 void SQLExec::column_definition(const ColumnDefinition* col, Identifier& column_name, ColumnAttribute& column_attribute) {
-    throw SQLExecError("not implemented");  // FIXME
+    column_name = col->name;
+    switch (col->type) {
+        case ColumnDefinition::DataType::INT:
+            column_attribute = ColumnAttribute::DataType::INT;
+            break;
+        case ColumnDefinition::DataType::TEXT:
+            column_attribute = ColumnAttribute::DataType::TEXT;
+            break;
+        default:
+            throw SQLExecError("not implemented");
+    }
 }
 
 QueryResult* SQLExec::create(const CreateStatement* statement) {
