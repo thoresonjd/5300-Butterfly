@@ -74,7 +74,7 @@ BlockIDs* HeapFile::block_ids() const {
 }
 
 u32 HeapFile::get_block_count() {
-    DB_BTREE_STAT *stat;
+    DB_BTREE_STAT* stat;
     this->db.stat(nullptr, &stat, DB_FAST_STAT);
     uint32_t bt_ndata = stat->bt_ndata;
     std::free(stat);
@@ -87,6 +87,6 @@ void HeapFile::db_open(uint flags) {
     this->db.set_error_stream(_DB_ENV->get_error_stream());
     this->db.set_re_len(DbBlock::BLOCK_SZ); // record length - will be ignored if file already exists
     this->db.open(nullptr, this->dbfilename.c_str(), nullptr, DB_RECNO, flags, 0644);
-    this->last = flags ? 0 : get_block_count();
+    this->last = flags ? 0 : this->get_block_count();
     this->closed = false;
 }
