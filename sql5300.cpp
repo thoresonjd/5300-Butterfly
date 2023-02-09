@@ -22,9 +22,8 @@ const std::string TEST = "test", QUIT = "quit";
 /**
  * Establishes a database environment
  * @param envDir The database environment directory
- * @return Pointer to the database environment
  */
-DbEnv* initDbEnv(string);
+void initDbEnv(string);
 
 /**
  * Runs the SQL shell loop and listens for queries
@@ -52,26 +51,23 @@ int main(int argc, char** argv) {
         cerr << "USAGE: " << argv[0] << " [db_environment]\n";
         return EXIT_FAILURE;
     }
-    _DB_ENV = initDbEnv(argv[1]);
+    initDbEnv(argv[1]);
     runSQLShell();
-    _DB_ENV->close(0);
-    delete _DB_ENV;
     return EXIT_SUCCESS;
 }
 
-DbEnv* initDbEnv(string envHome) {
+void initDbEnv(string envHome) {
     cout << "(sql5300: running with database environment at " << envHome << ")" << endl;
-    DbEnv* dbEnv = new DbEnv(0U);
-    dbEnv->set_message_stream(&cout);
-    dbEnv->set_error_stream(&cerr);
+    _DB_ENV = new DbEnv(0U);
+    _DB_ENV->set_message_stream(&cout);
+    _DB_ENV->set_error_stream(&cerr);
     try {
-        dbEnv->open(envHome.c_str(), ENV_FLAGS, 0);
+        _DB_ENV->open(envHome.c_str(), ENV_FLAGS, 0);
     } catch (DbException& e) {
         cerr << "(sql5300: " << e.what() << ")" << endl;
         exit(EXIT_FAILURE);
     }
-    //initialize_schema_tables();
-    return dbEnv;
+    initialize_schema_tables();
 }
 
 void runSQLShell() {
