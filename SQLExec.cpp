@@ -131,6 +131,8 @@ QueryResult* SQLExec::drop(const DropStatement* statement) {
     
     // get table name
     Identifier table_name = statement->name;
+    if (table_name == Tables::TABLE_NAME || table_name == Columns::TABLE_NAME)
+        throw SQLExecError("Cannot drop a schema table!");
     ValueDict where = {{"table_name", Value(table_name)}};
 
     // remove columns    
