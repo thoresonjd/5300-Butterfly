@@ -181,5 +181,16 @@ QueryResult* SQLExec::show_tables() {
 }
 
 QueryResult* SQLExec::show_columns(const ShowStatement* statement) {
-    return new QueryResult("not implemented"); // FIXME
+    ColumnNames* cn = new ColumnNames({"table_name", "column_name", "data_type"});
+    ColumnAttributes* ca = new ColumnAttributes({ColumnAttribute(ColumnAttribute::DataType::TEXT)});
+    ValueDict where = {{"table_name", Value(statement->tableName)}};  
+    DbRelation& columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
+    Handles* selected = columns.select(&where);
+    ValueDicts* rows = new ValueDicts();
+    for (auto const& r : *selected) {
+        ValueDict* row = columns.project(r, cn);
+        rows->push_back(row);
+    }
+    delete selected;
+    return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
 }
