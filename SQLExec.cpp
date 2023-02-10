@@ -163,8 +163,8 @@ QueryResult* SQLExec::show(const ShowStatement* statement) {
 
 QueryResult* SQLExec::show_tables() {
     // get column names and attributes
-    ColumnNames* cn = new ColumnNames({"table_name"});
-    ColumnAttributes* ca = new ColumnAttributes({ColumnAttribute::TEXT});
+    ColumnNames* cn = new ColumnNames();
+    ColumnAttributes* ca = new ColumnAttributes();
     SQLExec::tables->get_columns(Tables::TABLE_NAME, *cn, *ca);
 
     // get table names
