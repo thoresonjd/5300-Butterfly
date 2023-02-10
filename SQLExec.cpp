@@ -43,9 +43,10 @@ ostream &operator<<(ostream& out, const QueryResult& qres) {
 }
 
 QueryResult::~QueryResult() {
-    // FIXME
+    delete this->column_names;
+    delete this->column_attributes;
+    delete this->rows;
 }
-
 
 QueryResult *SQLExec::execute(const SQLStatement* statement) {
     if (!SQLExec::tables)
@@ -175,6 +176,8 @@ QueryResult* SQLExec::show_tables() {
         Identifier table_name = (*row)["table_name"].s;
         if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME)
             rows->push_back(row);
+        else
+            delete row;
     }
     delete tables;
     return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
