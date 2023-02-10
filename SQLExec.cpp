@@ -162,10 +162,25 @@ QueryResult* SQLExec::show(const ShowStatement* statement) {
 }
 
 QueryResult* SQLExec::show_tables() {
-    return new QueryResult("not implemented"); // FIXME
+    // get column names and attributes
+    ColumnNames* cn = new ColumnNames({"table_name"});
+    ColumnAttributes* ca = new ColumnAttributes({ColumnAttribute::TEXT});
+    SQLExec::tables->get_columns(Columns::TABLE_NAME, *cn, *ca);
+
+    // get table names
+    Handles* tables = SQLExec::tables->select();
+    ValueDicts* rows = new ValueDicts();
+    for (auto const& table : *tables) {
+        ValueDict* row = SQLExec::tables->project(table, cn);
+        Identifier table_name = (*row)["table_name"].s;
+        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME)
+            rows->push_back(row);
+        delete row;
+    }
+    delete tables;
+    return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
 }
 
 QueryResult* SQLExec::show_columns(const ShowStatement* statement) {
     return new QueryResult("not implemented"); // FIXME
 }
-
