@@ -165,7 +165,7 @@ QueryResult* SQLExec::show_tables() {
     // get column names and attributes
     ColumnNames* cn = new ColumnNames({"table_name"});
     ColumnAttributes* ca = new ColumnAttributes({ColumnAttribute::TEXT});
-    SQLExec::tables->get_columns(Columns::TABLE_NAME, *cn, *ca);
+    SQLExec::tables->get_columns(Tables::TABLE_NAME, *cn, *ca);
 
     // get table names
     Handles* tables = SQLExec::tables->select();
