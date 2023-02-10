@@ -42,4 +42,12 @@ If there are any issues, first try clearing out files from your database environ
 
 ### **Milestone 3: Schema Storage**
 
+Rudimentary implementation of the following SQL queries:
+```
+- CREATE TABLE <table_name> (<column_definitions>)
+- DROP TABLE <table_name>
+- SHOW TABLES
+- SHOW COLUMNS FROM <table_name>
+```
+
 ### **Milestone 4: Indexing Setup**
