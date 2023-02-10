@@ -175,7 +175,6 @@ QueryResult* SQLExec::show_tables() {
         Identifier table_name = (*row)["table_name"].s;
         if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME)
             rows->push_back(row);
-        delete row;
     }
     delete tables;
     return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
