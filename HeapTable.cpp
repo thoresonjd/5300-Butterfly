@@ -1,6 +1,6 @@
 /**
  * @file HeapTable.cpp
- * @author K Lundeen
+ * @authors Kevin Lundeen, Justin Thoreson
  * @see Seattle University, CPSC5300
  */
 #include <cstring>
@@ -66,10 +66,10 @@ Handles* HeapTable::select(const ValueDict* where) {
     this->open();
     Handles* handles = new Handles();
     BlockIDs* block_ids = this->file.block_ids();
-    for (auto const& block_id: *block_ids) {
+    for (BlockID& block_id: *block_ids) {
         SlottedPage* block = this->file.get(block_id);
         RecordIDs* record_ids = block->ids();
-        for (auto const& record_id: *record_ids) {
+        for (RecordID& record_id: *record_ids) {
             Handle handle(block_id, record_id);
             if (this->selected(handle, where))
                 handles->push_back(handle);
@@ -204,7 +204,7 @@ bool HeapTable::selected(Handle handle, const ValueDict* where) {
     if (where == nullptr)
         return true;
     ValueDict* row = this->project(handle, where);
-    bool selected =  *row == *where;
+    bool selected = *row == *where;
     delete row;
     return selected;
 }
@@ -215,7 +215,7 @@ bool HeapTable::selected(Handle handle, const ValueDict* where) {
  * @param a column value
  * @param b column value
  */
-void test_set_row(ValueDict &row, int a, std::string b) {
+void test_set_row(ValueDict& row, int a, std::string b) {
     row["a"] = Value(a);
     row["b"] = Value(b);
 }
@@ -228,8 +228,8 @@ void test_set_row(ValueDict &row, int a, std::string b) {
  * @param b        expected column value
  * @return         true if actual == expected for both columns, false otherwise
  */
-bool test_compare(DbRelation &table, Handle handle, int a, std::string b) {
-    ValueDict *result = table.project(handle);
+bool test_compare(DbRelation& table, Handle handle, int a, std::string b) {
+    ValueDict* result = table.project(handle);
     Value value = (*result)["a"];
     if (value.n != a) {
         delete result;

@@ -2,7 +2,7 @@
  * @file SlottedPage.h - Implementation of storage_engine with a heap file structure.
  * SlottedPage: DbBlock
  *
- * @author Kevin Lundeen, Justin Thoreson
+ * @authors Kevin Lundeen, Justin Thoreson
  * @see "Seattle University, CPSC5300, Winter 2023"
  */
 

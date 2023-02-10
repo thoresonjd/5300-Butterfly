@@ -1,6 +1,6 @@
 /**
  * @file sql5300.cpp - main entry for the relation manager's SQL shell
- * @author Kevin Lundeen, Justin Thoreson
+ * @authors Kevin Lundeen, Justin Thoreson
  * @see "Seattle University, CPSC5300, Winter 2023"
  */
 

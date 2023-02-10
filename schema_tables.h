@@ -39,7 +39,7 @@ public:
     // HeapTable overrides
     virtual void create();
 
-    virtual Handle insert(const ValueDict *row);
+    virtual Handle insert(const ValueDict* row);
 
     virtual void del(Handle handle);
 
@@ -51,27 +51,27 @@ public:
      * @param column_attributes  returned by reference: list of corresponding
      *                           attributes for column_names
      */
-    virtual void get_columns(Identifier table_name, ColumnNames &column_names, ColumnAttributes &column_attributes);
+    virtual void get_columns(Identifier table_name, ColumnNames& column_names, ColumnAttributes& column_attributes);
 
     /**
      * Get the correctly instantiated DbRelation for a given table.
      * @param table_name  table to get
      * @returns           instantiated DbRelation of the correct type
      */
-    virtual DbRelation &get_table(Identifier table_name);
+    virtual DbRelation& get_table(Identifier table_name);
 
 protected:
     // hard-coded columns for _tables table
-    static ColumnNames &COLUMN_NAMES();
+    static ColumnNames& COLUMN_NAMES();
 
-    static ColumnAttributes &COLUMN_ATTRIBUTES();
+    static ColumnAttributes& COLUMN_ATTRIBUTES();
 
     // keep a reference to the columns table (for get_columns method)
-    static Columns *columns_table;
+    static Columns* columns_table;
 
 private:
     // keep a cache of all the tables we've instantiated so far
-    static std::map<Identifier, DbRelation *> table_cache;
+    static std::map<Identifier, DbRelation*> table_cache;
 };
 
 
@@ -93,12 +93,12 @@ public:
     // HeapTable overrides
     virtual void create();
 
-    virtual Handle insert(const ValueDict *row);
+    virtual Handle insert(const ValueDict* row);
 
 protected:
     // hard-coded columns for the _columns table
-    static ColumnNames &COLUMN_NAMES();
+    static ColumnNames& COLUMN_NAMES();
 
-    static ColumnAttributes &COLUMN_ATTRIBUTES();
+    static ColumnAttributes& COLUMN_ATTRIBUTES();
 };
 

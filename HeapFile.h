@@ -1,8 +1,8 @@
-/*
+/**
  * @file HeapFile.h - Implementation of storage_engine with a heap file structure.
  * HeapFile: DbFile
  *
- * @author Kevin Lundeen
+ * @authors Kevin Lundeen, Justin Thoreson
  * @see "Seattle University, CPSC5300, Winter 2023"
  */
 

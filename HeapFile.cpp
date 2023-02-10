@@ -1,6 +1,6 @@
 /**
  * @file HeapFile.cpp
- * @author K Lundeen
+ * @authors Kevin Lundeen, Justin Thoreson
  * @see Seattle University, CPSC5300
  */
 
@@ -54,7 +54,7 @@ SlottedPage* HeapFile::get_new(void) {
     return new SlottedPage(data, this->last);
 }
 
-SlottedPage *HeapFile::get(BlockID block_id) {
+SlottedPage* HeapFile::get(BlockID block_id) {
     Dbt key(&block_id, sizeof(block_id)), data;
     this->db.get(nullptr, &key, &data, 0);
     return new SlottedPage(data, block_id, false);

@@ -1,6 +1,6 @@
 /**
  * @file SlottedPage.cpp
- * @author K Lundeen
+ * @authors Kevin Lundeen, Justin Thoreson
  * @see Seattle University, CPSC5300
  */
 
@@ -112,7 +112,7 @@ void SlottedPage::slide(u_int16_t start, u_int16_t end) {
 
     // fix up headers to the right
     RecordIDs *record_ids = ids();
-    for (auto const &record_id : *record_ids) {
+    for (RecordID& record_id : *record_ids) {
         u16 size, loc;
         this->get_header(size, loc, record_id);
         if (loc <= start) {

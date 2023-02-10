@@ -59,7 +59,7 @@ const vector<string> ParseTreeToString::reserved_words = {
 };
 
 bool ParseTreeToString::is_reserved_word(string candidate) {
-    for (auto const &word: reserved_words)
+    for (const string& word: reserved_words)
         if (candidate == word)
             return true;
     return false;
@@ -162,7 +162,7 @@ string ParseTreeToString::table_ref(const TableRef* table) {
             break;
         case kTableCrossProduct:
             bool doComma = false;
-            for (TableRef *tbl : *table->list) {
+            for (TableRef* tbl : *table->list) {
                 if (doComma)
                     ret += ", ";
                 ret += table_ref(tbl);
@@ -195,7 +195,7 @@ string ParseTreeToString::column_definition(const ColumnDefinition* col) {
 string ParseTreeToString::select(const SelectStatement* stmt) {
     string ret("SELECT ");
     bool doComma = false;
-    for (Expr *expr : *stmt->selectList) {
+    for (Expr* expr : *stmt->selectList) {
         if (doComma)
             ret += ", ";
         ret += expression(expr);

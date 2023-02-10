@@ -29,25 +29,25 @@ public:
     QueryResult(std::string message) : column_names(nullptr), column_attributes(nullptr), rows(nullptr),
                                        message(message) {}
 
-    QueryResult(ColumnNames *column_names, ColumnAttributes *column_attributes, ValueDicts *rows, std::string message)
+    QueryResult(ColumnNames* column_names, ColumnAttributes* column_attributes, ValueDicts* rows, std::string message)
             : column_names(column_names), column_attributes(column_attributes), rows(rows), message(message) {}
 
     virtual ~QueryResult();
 
-    ColumnNames *get_column_names() const { return column_names; }
+    ColumnNames* get_column_names() const { return column_names; }
 
-    ColumnAttributes *get_column_attributes() const { return column_attributes; }
+    ColumnAttributes* get_column_attributes() const { return column_attributes; }
 
-    ValueDicts *get_rows() const { return rows; }
+    ValueDicts* get_rows() const { return rows; }
 
-    const std::string &get_message() const { return message; }
+    const std::string& get_message() const { return message; }
 
-    friend std::ostream &operator<<(std::ostream &stream, const QueryResult &qres);
+    friend std::ostream& operator<<(std::ostream& stream, const QueryResult& qres);
 
 protected:
-    ColumnNames *column_names;
-    ColumnAttributes *column_attributes;
-    ValueDicts *rows;
+    ColumnNames* column_names;
+    ColumnAttributes* column_attributes;
+    ValueDicts* rows;
     std::string message;
 };
 
@@ -62,22 +62,22 @@ public:
      * @param statement   the Hyrise AST of the SQL statement to execute
      * @returns           the query result (freed by caller)
      */
-    static QueryResult *execute(const hsql::SQLStatement *statement);
+    static QueryResult* execute(const hsql::SQLStatement* statement);
 
 protected:
     // the one place in the system that holds the _tables table
-    static Tables *tables;
+    static Tables* tables;
 
     // recursive decent into the AST
-    static QueryResult *create(const hsql::CreateStatement *statement);
+    static QueryResult* create(const hsql::CreateStatement* statement);
 
-    static QueryResult *drop(const hsql::DropStatement *statement);
+    static QueryResult* drop(const hsql::DropStatement* statement);
 
-    static QueryResult *show(const hsql::ShowStatement *statement);
+    static QueryResult* show(const hsql::ShowStatement* statement);
 
-    static QueryResult *show_tables();
+    static QueryResult* show_tables();
 
-    static QueryResult *show_columns(const hsql::ShowStatement *statement);
+    static QueryResult* show_columns(const hsql::ShowStatement* statement);
 
     /**
      * Pull out column name and attributes from AST's column definition clause
@@ -86,6 +86,6 @@ protected:
      * @param column_attributes  returned by reference
      */
     static void
-    column_definition(const hsql::ColumnDefinition *col, Identifier &column_name, ColumnAttribute &column_attribute);
+    column_definition(const hsql::ColumnDefinition* col, Identifier& column_name, ColumnAttribute& column_attribute);
 };
 

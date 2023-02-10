@@ -47,7 +47,7 @@ Columns *Tables::columns_table = nullptr;
 std::map<Identifier, DbRelation *> Tables::table_cache;
 
 // get the column name for _tables column
-ColumnNames &Tables::COLUMN_NAMES() {
+ColumnNames& Tables::COLUMN_NAMES() {
     static ColumnNames cn;
     if (cn.empty())
         cn.push_back("table_name");
@@ -55,7 +55,7 @@ ColumnNames &Tables::COLUMN_NAMES() {
 }
 
 // get the column attribute for _tables column
-ColumnAttributes &Tables::COLUMN_ATTRIBUTES() {
+ColumnAttributes& Tables::COLUMN_ATTRIBUTES() {
     static ColumnAttributes cas;
     if (cas.empty()) {
         ColumnAttribute ca(ColumnAttribute::TEXT);
@@ -83,9 +83,9 @@ void Tables::create() {
 }
 
 // Manually check that table_name is unique.
-Handle Tables::insert(const ValueDict *row) {
+Handle Tables::insert(const ValueDict* row) {
     // Try SELECT * FROM _tables WHERE table_name = row["table_name"] and it should return nothing
-    Handles *handles = select(row);
+    Handles* handles = select(row);
     bool unique = handles->empty();
     delete handles;
     if (!unique)
@@ -97,10 +97,10 @@ Handle Tables::insert(const ValueDict *row) {
 // NOTE: once the row is deleted, any reference to the table (from get_table() below) is gone! So drop the table first.
 void Tables::del(Handle handle) {
     // remove from cache, if there
-    ValueDict *row = project(handle);
+    ValueDict* row = project(handle);
     Identifier table_name = row->at("table_name").s;
     if (Tables::table_cache.find(table_name) != Tables::table_cache.end()) {
-        DbRelation *table = Tables::table_cache.at(table_name);
+        DbRelation* table = Tables::table_cache.at(table_name);
         Tables::table_cache.erase(table_name);
         delete table;
     }
@@ -109,14 +109,14 @@ void Tables::del(Handle handle) {
 }
 
 // Return a list of column names and column attributes for given table.
-void Tables::get_columns(Identifier table_name, ColumnNames &column_names, ColumnAttributes &column_attributes) {
+void Tables::get_columns(Identifier table_name, ColumnNames& column_names, ColumnAttributes& column_attributes) {
     // SELECT * FROM _columns WHERE table_name = <table_name>
     ValueDict where;
     where["table_name"] = table_name;
-    Handles *handles = Tables::columns_table->select(&where);
+    Handles* handles = Tables::columns_table->select(&where);
 
     ColumnAttribute column_attribute;
-    for (auto const &handle: *handles) {
+    for (Handle& handle: *handles) {
         ValueDict *row = Tables::columns_table->project(
                 handle);  // get the row's values: {'column_name': <name>, 'data_type': <type>}
 
@@ -155,7 +155,7 @@ DbRelation& Tables::get_table(Identifier table_name) {
 const Identifier Columns::TABLE_NAME = "_columns";
 
 // get the column name for _tables column
-ColumnNames &Columns::COLUMN_NAMES() {
+ColumnNames& Columns::COLUMN_NAMES() {
     static ColumnNames cn;
     if (cn.empty()) {
         cn.push_back("table_name");
@@ -166,7 +166,7 @@ ColumnNames &Columns::COLUMN_NAMES() {
 }
 
 // get the column attribute for _tables column
-ColumnAttributes &Columns::COLUMN_ATTRIBUTES() {
+ColumnAttributes& Columns::COLUMN_ATTRIBUTES() {
     static ColumnAttributes cas;
     if (cas.empty()) {
         ColumnAttribute ca(ColumnAttribute::TEXT);
@@ -199,7 +199,7 @@ void Columns::create() {
 }
 
 // Manually check that (table_name, column_name) is unique.
-Handle Columns::insert(const ValueDict *row) {
+Handle Columns::insert(const ValueDict* row) {
     // Check that datatype is acceptable
     if (!is_acceptable_identifier(row->at("table_name").s))
         throw DbRelationError("unacceptable table name '" + row->at("table_name").s + "'");
