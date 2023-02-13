@@ -8,7 +8,7 @@ A relation manager is part of a full DBMS and is the core of the system, and thi
 
 ## **Sprint Verano**
 
-### Team:
+### **Team**:
 Bobby Brown and Denis Rajic
 
 ### **Milestone 1: Skeleton**
@@ -31,23 +31,78 @@ To run the program, enter `$ ./sql5300 [PATH]` where `[PATH]` is the directory w
 
 ### **Testing**
 
-To test the program, enter `SQL> test` at the prompt. This will run the `test_heap_storage` function in the [heap_storage.cpp](https://github.com/klundeen/5300-Butterfly/blob/main/heap_storage.cpp) file.
+To test the program, enter `SQL> test` at the prompt. This will run the `test_heap_storage` function in the [`heap_storage.cpp`](https://github.com/klundeen/5300-Butterfly/blob/main/heap_storage.cpp) file.
 
 If there are any issues, first try clearing out files from your database environment.
 
 ### **Handoff**
+
 [Handoff video](https://seattleu.instructuremedia.com/embed/45579d45-20d7-405c-8cd3-4851fb004d18)
 
 ## **Sprint Otoño**
 
+### **Team**
+
+Justin Thoreson & Grandi Radhakrishna Rakesh
+
 ### **Milestone 3: Schema Storage**
 
-Rudimentary implementation of the following SQL queries:
+Rudimentary implementation of the following SQL queries (shown in [BNF](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form) notation):
+
+CREATE TABLE
 ```
-- CREATE TABLE <table_name> (<column_definitions>)
-- DROP TABLE <table_name>
-- SHOW TABLES
-- SHOW COLUMNS FROM <table_name>
+<table_definition> ::= CREATE TABLE <table_name> ( <column_definitions> )
+<column_definitions> ::= <column_definition> | <column_definition>, <column_definitions>
+<column_definition> ::= <column_name> <datatype>
+```
+    
+DROP TABLE
+```
+<drop_table_statement> ::= DROP TABLE <table_name>
 ```
 
-### **Milestone 4: Indexing Setup**
+SHOW TABLES
+```
+SELECT table_name FROM _tables WHERE table_name NOT IN ("_tables", "_columns");
+```
+
+SHOW COLUMNS
+```
+<show_columns_statement> ::= SHOW COLUMNS FROM <table_name>
+```
+
+### **Compilation**
+
+To compile, execute the [`Makefile`](./Makefile) via:
+```
+$ make
+```
+
+### **Usage**
+
+To execute, run: 
+```
+$ ./sql5300 [ENV_DIR]
+``` 
+where `ENV_DIR` is the directory where the database environment resides.
+
+SQL statements can be provided to the SQL shell when running. To terminate the SQL shell, run: 
+```sql
+SQL> quit
+```
+
+### **Testing**
+
+To test the functionality of the rudimentary storage engine, run:
+```sql
+SQL> test
+```
+
+### **Error & Memory Leak Checking**
+
+If any issues arise, first try clearing out all the files within the database environment directory.
+
+Checking for memory leaks can be done with [Valgrind](https://valgrind.org/). Valgrind error suppressions have been configured in the [`valgrind.supp`](./valgrind.supp) file. A target within the Makefile has been configured with relevant flags to execute Valgrind via running the command: 
+```
+$ make check
+```
