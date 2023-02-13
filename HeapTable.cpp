@@ -19,7 +19,7 @@ void HeapTable::create() {
 void HeapTable::create_if_not_exists() {
     try {
         this->open();
-    } catch (DbException &e) {
+    } catch (DbException& e) {
         this->create();
     }
 }
@@ -38,13 +38,13 @@ void HeapTable::close() {
 
 Handle HeapTable::insert(const ValueDict* row) {
     this->open();
-    ValueDict *full_row = this->validate(row);
+    ValueDict* full_row = this->validate(row);
     Handle handle = this->append(full_row);
     delete full_row;
     return handle;
 }
 
-void HeapTable::update(const Handle handle, const ValueDict *new_values) {
+void HeapTable::update(const Handle handle, const ValueDict* new_values) {
     throw DbRelationError("Not implemented");
 }
 
@@ -52,7 +52,7 @@ void HeapTable::del(const Handle handle) {
     this->open();
     BlockID block_id = handle.first;
     RecordID record_id = handle.second;
-    SlottedPage *block = this->file.get(block_id);
+    SlottedPage* block = this->file.get(block_id);
     block->del(record_id);
     this->file.put(block);
     delete block;

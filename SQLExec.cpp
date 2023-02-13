@@ -43,9 +43,15 @@ ostream& operator<<(ostream& out, const QueryResult& qres) {
 }
 
 QueryResult::~QueryResult() {
-    delete this->column_names;
-    delete this->column_attributes;
-    delete this->rows;
+    if (this->column_names)
+        delete this->column_names;
+    if (this->column_attributes)
+        delete this->column_attributes;
+    if (this->rows) {
+        for (ValueDict* row: *this->rows)
+            delete row;
+        delete this->rows;
+    }
 }
 
 QueryResult* SQLExec::execute(const SQLStatement* statement) {
@@ -148,7 +154,9 @@ QueryResult* SQLExec::drop(const DropStatement* statement) {
     // remove table
     DbRelation& table = SQLExec::tables->get_table(table_name);
     table.drop();
-    SQLExec::tables->del(*SQLExec::tables->select(&where)->begin());
+    rows = SQLExec::tables->select(&where);
+    SQLExec::tables->del(*rows->begin());
+    delete rows;
 
     return new QueryResult(string("dropped ") + table_name);    
 }

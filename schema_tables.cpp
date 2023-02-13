@@ -104,7 +104,7 @@ void Tables::del(Handle handle) {
         Tables::table_cache.erase(table_name);
         delete table;
     }
-
+    delete row;
     HeapTable::del(handle);
 }
 
