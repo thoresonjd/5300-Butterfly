@@ -48,7 +48,7 @@ QueryResult::~QueryResult() {
     delete this->rows;
 }
 
-QueryResult *SQLExec::execute(const SQLStatement* statement) {
+QueryResult* SQLExec::execute(const SQLStatement* statement) {
     if (!SQLExec::tables)
         SQLExec::tables = new Tables();
     try {
@@ -114,15 +114,15 @@ QueryResult* SQLExec::create(const CreateStatement* statement) {
             try {
                 for (Handle& columnHandle : columnHandles)
                     columns.del(columnHandle);
-            } catch (std::exception &e) {}
-            throw new std::exception;
+            } catch (std::exception& e) {}
+            throw;
         }
-    } catch (std::exception &e) {
+    } catch (std::exception& e) {
         // attempt to undo the insertion into _tables
         try {
             SQLExec::tables->del(tableHandle);
         } catch (std::exception& e) {}
-        throw new std::exception;
+        throw;
     }
 
     return new QueryResult(string("created ") + statement->tableName);
