@@ -51,7 +51,6 @@ QueryResult::~QueryResult() {
 QueryResult *SQLExec::execute(const SQLStatement* statement) {
     if (!SQLExec::tables)
         SQLExec::tables = new Tables();
-
     try {
         switch (statement->type()) {
             case kStmtCreate:
@@ -106,7 +105,10 @@ QueryResult* SQLExec::create(const CreateStatement* statement) {
 
             // create table
             DbRelation& table = SQLExec::tables->get_table(statement->tableName);
-            table.create();
+            if (statement->ifNotExists)
+                table.create_if_not_exists();
+            else
+                table.create();
         } catch (std::exception& e) {
             // attempt to undo the insertions into _columns
             try {
