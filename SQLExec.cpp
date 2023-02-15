@@ -30,6 +30,9 @@ ostream& operator<<(ostream& out, const QueryResult& qres) {
                     case ColumnAttribute::TEXT:
                         out << "\"" << value.s << "\"";
                         break;
+                    case ColumnAttribute::BOOLEAN:
+                        out << (value.n == 0 ? "false" : "true");
+                        break;
                     default:
                         out << "???";
                 }
@@ -140,7 +143,7 @@ QueryResult* SQLExec::drop(const DropStatement* statement) {
     
     // get table name
     Identifier table_name = statement->name;
-    if (table_name == Tables::TABLE_NAME || table_name == Columns::TABLE_NAME)
+    if (table_name == Tables::TABLE_NAME || table_name == Columns::TABLE_NAME || table_name == Indices::TABLE_NAME)
         throw SQLExecError("Cannot drop a schema table!");
     ValueDict where = {{"table_name", Value(table_name)}};
 
@@ -184,7 +187,7 @@ QueryResult* SQLExec::show_tables() {
     for (Handle& table : *tables) {
         ValueDict* row = SQLExec::tables->project(table, cn);
         Identifier table_name = (*row)["table_name"].s;
-        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME)
+        if (table_name != Tables::TABLE_NAME && table_name != Columns::TABLE_NAME && table_name != Indices::TABLE_NAME)
             rows->push_back(row);
         else
             delete row;
@@ -204,4 +207,12 @@ QueryResult* SQLExec::show_columns(const ShowStatement* statement) {
         rows->push_back(columns.project(row, cn));
     delete selected;
     return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
+}
+
+QueryResult* SQLExec::show_index(const ShowStatement* statement) {
+     return new QueryResult("show index not implemented"); // FIXME
+}
+
+QueryResult* SQLExec::drop_index(const DropStatement* statement) {
+    return new QueryResult("drop index not implemented");  // FIXME
 }

@@ -26,36 +26,35 @@ const vector<string> ParseTreeToString::reserved_words = {
     "DISTINCT", "DOUBLE", "DROP", "DYNAMIC", "EACH", "ELEMENT",
     "ELSE", "END", "END-EXEC", "ESCAPE", "EXCEPT", "EXEC",
     "EXECUTE", "EXISTS", "EXTERNAL", "FALSE", "FETCH", "FILTER",
-    "FLOAT", "FOR", "FOREIGN", "FREE", "FROM", "FULL",
-    "FUNCTION", "GET", "GLOBAL", "GRANT", "GROUP", "GROUPING",
-    "HAVING", "HOLD", "HOUR", "IDENTITY", "IMMEDIATE", "IN",
-    "INDICATOR", "INNER", "INOUT", "INPUT", "INSENSITIVE",
-    "INSERT", "INT", "INTEGER", "INTERSECT", "INTERVAL", "INTO",
-    "IS", "ISOLATION", "JOIN", "LANGUAGE", "LARGE", "LATERAL",
-    "LEADING", "LEFT", "LIKE", "LOCAL", "LOCALTIME",
-    "LOCALTIMESTAMP", "MATCH", "MEMBER", "MERGE", "METHOD",
-    "MINUTE", "MODIFIES", "MODULE", "MONTH", "MULTISET",
-    "NATIONAL", "NATURAL", "NCHAR", "NCLOB", "NEW", "NO", "NONE",
-    "NOT", "NULL", "NUMERIC", "OF", "OLD", "ON", "ONLY", "OPEN",
-    "OR", "ORDER", "OUT", "OUTER", "OUTPUT", "OVER", "OVERLAPS",
-    "PARAMETER", "PARTITION", "PRECISION", "PREPARE", "PRIMARY",
-    "PROCEDURE", "RANGE", "READS", "REAL", "RECURSIVE", "REF",
-    "REFERENCES", "REFERENCING", "REGR_AVGX", "REGR_AVGY",
-    "REGR_COUNT", "REGR_INTERCEPT", "REGR_R2", "REGR_SLOPE",
-    "REGR_SXX", "REGR_SXY", "REGR_SYY", "RELEASE", "RESULT",
-    "RETURN", "RETURNS", "REVOKE", "RIGHT", "ROLLBACK", "ROLLUP",
-    "ROW", "ROWS", "SAVEPOINT", "SCROLL", "SEARCH", "SECOND",
-    "SELECT", "SENSITIVE", "SESSION_USER", "SET", "SIMILAR",
-    "SMALLINT", "SOME", "SPECIFIC", "SPECIFICTYPE", "SQL",
-    "SQLEXCEPTION", "SQLSTATE", "SQLWARNING", "START", "STATIC",
-    "SUBMULTISET", "SYMMETRIC", "SYSTEM", "SYSTEM_USER", "TABLE",
-    "THEN", "TIME", "TIMESTAMP", "TIMEZONE_HOUR",
+    "FLOAT", "FOR", "FOREIGN", "FREE", "FROM", "FULL", "FUNCTION",
+    "GET", "GLOBAL", "GRANT", "GROUP", "GROUPING", "HAVING",
+    "HOLD", "HOUR", "IDENTITY", "IMMEDIATE", "IN", "INDICATOR",
+    "INNER", "INOUT", "INPUT", "INSENSITIVE", "INSERT", "INT",
+    "INTEGER", "INTERSECT", "INTERVAL", "INTO", "IS", "ISOLATION",
+    "JOIN", "LANGUAGE", "LARGE", "LATERAL", "LEADING", "LEFT",
+    "LIKE", "LOCAL", "LOCALTIME", "LOCALTIMESTAMP", "MATCH",
+    "MEMBER", "MERGE", "METHOD", "MINUTE", "MODIFIES", "MODULE",
+    "MONTH", "MULTISET", "NATIONAL", "NATURAL", "NCHAR", "NCLOB",
+    "NEW", "NO", "NONE", "NOT", "NULL", "NUMERIC", "OF", "OLD",
+    "ON", "ONLY", "OPEN", "OR", "ORDER", "OUT", "OUTER", "OUTPUT",
+    "OVER", "OVERLAPS", "PARAMETER", "PARTITION", "PRECISION",
+    "PREPARE", "PRIMARY", "PROCEDURE", "RANGE", "READS", "REAL",
+    "RECURSIVE", "REF", "REFERENCES", "REFERENCING", "REGR_AVGX",
+    "REGR_AVGY", "REGR_COUNT", "REGR_INTERCEPT", "REGR_R2",
+    "REGR_SLOPE", "REGR_SXX", "REGR_SXY", "REGR_SYY", "RELEASE",
+    "RESULT", "RETURN", "RETURNS", "REVOKE", "RIGHT", "ROLLBACK",
+    "ROLLUP", "ROW", "ROWS", "SAVEPOINT", "SCROLL", "SEARCH",
+    "SECOND", "SELECT", "SENSITIVE", "SESSION_USER", "SET",
+    "SIMILAR", "SMALLINT", "SOME", "SPECIFIC", "SPECIFICTYPE",
+    "SQL", "SQLEXCEPTION", "SQLSTATE", "SQLWARNING", "START",
+    "STATIC", "SUBMULTISET", "SYMMETRIC", "SYSTEM", "SYSTEM_USER",
+    "TABLE", "THEN", "TIME", "TIMESTAMP", "TIMEZONE_HOUR",
     "TIMEZONE_MINUTE", "TO", "TRAILING", "TRANSLATION", "TREAT",
     "TRIGGER", "TRUE", "UESCAPE", "UNION", "UNIQUE", "UNKNOWN",
     "UNNEST", "UPDATE", "UPPER", "USER", "USING", "VALUE",
-    "VALUES", "VAR_POP", "VAR_SAMP", "VARCHAR", "VARYING",
-    "WHEN", "WHENEVER", "WHERE", "WIDTH_BUCKET", "WINDOW",
-    "WITH", "WITHIN", "WITHOUT", "YEAR"
+    "VALUES", "VAR_POP", "VAR_SAMP", "VARCHAR", "VARYING", "WHEN",
+    "WHENEVER", "WHERE", "WIDTH_BUCKET", "WINDOW", "WITH",
+    "WITHIN", "WITHOUT", "YEAR"
 };
 
 bool ParseTreeToString::is_reserved_word(string candidate) {
@@ -213,20 +212,36 @@ string ParseTreeToString::insert(const InsertStatement* stmt) {
 
 string ParseTreeToString::create(const CreateStatement* stmt) {
     string ret("CREATE ");
-    if (stmt->type != CreateStatement::kTable)
-        return ret + "...";
-    ret += "TABLE ";
-    if (stmt->ifNotExists)
-        ret += "IF NOT EXISTS ";
-    ret += string(stmt->tableName) + " (";
-    bool doComma = false;
-    for (ColumnDefinition *col : *stmt->columns) {
-        if (doComma)
-            ret += ", ";
-        ret += column_definition(col);
-        doComma = true;
+    if (stmt->type == CreateStatement::kTable) {
+        ret += "TABLE ";
+        if (stmt->ifNotExists)
+            ret += "IF NOT EXISTS ";
+        ret += string(stmt->tableName) + " (";
+        bool doComma = false;
+        for (ColumnDefinition *col : *stmt->columns) {
+            if (doComma)
+                ret += ", ";
+            ret += column_definition(col);
+            doComma = true;
+        }
+        ret += ")";
+    } else if (stmt->type == CreateStatement::kIndex) {
+        ret += "INDEX ";
+        ret += string(stmt->indexName) + " ON ";
+        ret += string(stmt->tableName) + " USING " + stmt->indexType + " (";
+        ret += string(stmt->indexName) + " ON ";
+        ret += string(stmt->tableName) + " USING " + stmt->indexType + " (";
+        bool doComma = false;
+        for (auto const& col : *stmt->indexColumns) {
+            if (doComma)
+                ret += ", ";
+            ret += string(col);
+            doComma = true;
+        }
+        ret += ")";
+    } else {
+        ret += "...";
     }
-    ret += ")";
     return ret;
 }
 
@@ -253,7 +268,7 @@ string ParseTreeToString::show(const ShowStatement* stmt) {
             ret += string("COLUMNS FROM ") + stmt->tableName;
             break;
         case ShowStatement::kIndex:
-            ret += "INDEX";
+            ret += string("INDEX FROM ") + stmt->tableName;
             break;
         default:
             ret += "?what?";
