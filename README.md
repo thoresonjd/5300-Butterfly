@@ -102,7 +102,7 @@ SQL> quit
 
 ### **Testing**
 
-To test the functionality of the rudimentary storage engine, run:
+To test the functionality of the relation manager, run:
 ```sql
 SQL> test
 ```
