@@ -91,6 +91,17 @@ void SQLExec::column_definition(const ColumnDefinition* col, Identifier& column_
 }
 
 QueryResult* SQLExec::create(const CreateStatement* statement) {
+    switch(statement->type) {
+        case CreateStatement::kTable:
+            return create_table(statement);
+        case CreateStatement::kIndex:
+            return create_index(statement);
+        default:
+            return new QueryResult("not implemented");
+    }
+}
+
+QueryResult* SQLExec::create_table(const CreateStatement* statement) {
     // update _tables schema
     ValueDict row = {{"table_name", Value(statement->tableName)}};
     Handle tableHandle = SQLExec::tables->insert(&row);
@@ -137,7 +148,22 @@ QueryResult* SQLExec::create(const CreateStatement* statement) {
     return new QueryResult(string("created ") + statement->tableName);
 }
 
+QueryResult* SQLExec::create_index(const CreateStatement* statement) {
+    return new QueryResult("create index not implemented"); // FIXME
+}
+
 QueryResult* SQLExec::drop(const DropStatement* statement) {
+    switch (statement->type) {
+        case DropStatement::kTable:
+            return drop_table(statement);
+        case DropStatement::kIndex:
+            return drop_index(statement);
+        default:
+            return new QueryResult("not implemented");
+    }
+}
+
+QueryResult* SQLExec::drop_table(const DropStatement* statement) {
     if (statement->type != DropStatement::kTable)
         throw SQLExecError("unrecognized DROP type");
     
@@ -162,6 +188,10 @@ QueryResult* SQLExec::drop(const DropStatement* statement) {
     delete rows;
 
     return new QueryResult(string("dropped ") + table_name);    
+}
+
+QueryResult* SQLExec::drop_index(const DropStatement* statement) {
+    return new QueryResult("drop index not implemented"); // FIXME
 }
 
 QueryResult* SQLExec::show(const ShowStatement* statement) {
@@ -211,8 +241,4 @@ QueryResult* SQLExec::show_columns(const ShowStatement* statement) {
 
 QueryResult* SQLExec::show_index(const ShowStatement* statement) {
      return new QueryResult("show index not implemented"); // FIXME
-}
-
-QueryResult* SQLExec::drop_index(const DropStatement* statement) {
-    return new QueryResult("drop index not implemented");  // FIXME
 }
