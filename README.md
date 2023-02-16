@@ -77,7 +77,7 @@ Setting up SQL index commands prior to actual index implementation. The followin
 ```sql
 CREATE INDEX index_name ON table_name [USING {BTREE | HASH}] (col1, col2, ...)
 SHOW INDEX FROM table_name
-DROP INDEX index_name ON table_name
+DROP INDEX index_name FROM table_name
 ```
 
 ### **Compilation**
