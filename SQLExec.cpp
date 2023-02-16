@@ -153,7 +153,34 @@ QueryResult* SQLExec::create_table(const CreateStatement* statement) {
 }
 
 QueryResult* SQLExec::create_index(const CreateStatement* statement) {
-    return new QueryResult("create index not implemented");
+    DbRelation& table = SQLExec::tables->get_table(statement->tableName);
+
+    // check that all the index columns exist in the table
+    const ColumnNames& cn = table.get_column_names();
+    for (char* column_name : *statement->indexColumns)
+        if (find(cn.begin(), cn.end(), string(column_name)) == cn.end())
+            throw SQLExecError("no such column " + string(column_name) + " in table " + statement->tableName);
+
+    // insert a row for each column in index key into _indices
+    ValueDict row = {
+        {"table_name", Value(statement->tableName)},
+        {"index_name", Value(statement->indexName)},
+        {"column_name", Value("")},
+        {"seq_in_index", Value()},
+        {"index_type", Value(statement->indexType)},
+        {"is_unique", Value(string(statement->indexType) == "BTREE")}
+    };
+    for (char* column_name : *statement->indexColumns) {
+        row["column_name"] = Value(column_name);
+        row["seq_in_index"].n += 1;
+        SQLExec::indices->insert(&row);
+    }
+
+    // call get_index to get a reference to the new index and then invoke the create method on it
+    DbIndex& index = SQLExec::indices->get_index(string(statement->tableName), string(statement->indexName));
+    index.create();
+
+    return new QueryResult(string("created index ") + statement->indexName);
 }
 
 QueryResult* SQLExec::drop(const DropStatement* statement) {
