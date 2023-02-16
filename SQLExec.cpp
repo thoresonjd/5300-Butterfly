@@ -153,7 +153,7 @@ QueryResult* SQLExec::create_table(const CreateStatement* statement) {
 }
 
 QueryResult* SQLExec::create_index(const CreateStatement* statement) {
-    return new QueryResult("create index not implemented"); // FIXME
+    return new QueryResult("create index not implemented");
 }
 
 QueryResult* SQLExec::drop(const DropStatement* statement) {
@@ -258,12 +258,11 @@ QueryResult* SQLExec::show_index(const ShowStatement* statement){
         ColumnAttribute(ColumnAttribute::DataType::TEXT),
         ColumnAttribute(ColumnAttribute::DataType::BOOLEAN),
     });
-    DbRelation& indices = SQLExec::tables->get_table(Indices::TABLE_NAME);
     ValueDict where = {{"table_name", Value(statement->tableName)}};
-    Handles* selected = indices.select(&where);
+    Handles* selected = SQLExec::indices->select(&where);
     ValueDicts* rows = new ValueDicts();
     for (Handle& row : *selected)
-        rows->push_back(indices.project(row, cn));
+        rows->push_back(SQLExec::indices->project(row, cn));
     delete selected;
-    return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows"); // FIXME
+    return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
 }
