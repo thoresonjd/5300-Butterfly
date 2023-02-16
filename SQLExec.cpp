@@ -204,6 +204,12 @@ QueryResult* SQLExec::drop_table(const DropStatement* statement) {
         throw SQLExecError("Cannot drop a schema table!");
     ValueDict where = {{"table_name", Value(table_name)}};
 
+    // before dropping the table, drop each index on the table
+    Handles* selected = SQLExec::indices->select(&where);
+    for (Handle& row : *selected)
+        SQLExec::indices->del(row);
+    delete selected;
+
     // remove columns    
     DbRelation& columns = SQLExec::tables->get_table(Columns::TABLE_NAME);
     Handles* rows = columns.select(&where);
