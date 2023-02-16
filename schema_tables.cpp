@@ -294,8 +294,7 @@ ColumnAttributes &Indices::COLUMN_ATTRIBUTES() {
 }
 
 // ctor - we have a fixed table structure
-Indices::Indices() : HeapTable(TABLE_NAME, COLUMN_NAMES(), COLUMN_ATTRIBUTES()) {
-}
+Indices::Indices() : HeapTable(TABLE_NAME, COLUMN_NAMES(), COLUMN_ATTRIBUTES()) {}
 
 // Manually check constraints -- unique on (table, index, column)
 Handle Indices::insert(const ValueDict *row) {
@@ -323,12 +322,13 @@ Handle Indices::insert(const ValueDict *row) {
 // NOTE: once the row is deleted, any reference to the index (from get_index() below) is gone! So drop the index
 void Indices::del(Handle handle) {
     // remove from cache, if there
-    ValueDict *row = project(handle);
+    ValueDict* row = project(handle);
     Identifier table_name = row->at("table_name").s;
     Identifier index_name = row->at("index_name").s;
+    delete row;
     std::pair<Identifier, Identifier> cache_key(table_name, index_name);
     if (Indices::index_cache.find(cache_key) != Indices::index_cache.end()) {
-        DbIndex *index = Indices::index_cache.at(cache_key);
+        DbIndex* index = Indices::index_cache.at(cache_key);
         Indices::index_cache.erase(cache_key);
         delete index;
     }
