@@ -67,6 +67,7 @@ public:
 protected:
     // the one place in the system that holds the _tables and _indices tables
     static Tables* tables;
+    static Indices* indices;
 
     // recursive decent into the AST
     static QueryResult* create(const hsql::CreateStatement* statement);

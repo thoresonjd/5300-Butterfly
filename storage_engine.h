@@ -226,7 +226,7 @@ public:
 
     Value(int32_t n) : n(n) { data_type = ColumnAttribute::INT; }
 
-    Value(std::string s) : s(s) { data_type = ColumnAttribute::TEXT; }
+    Value(std::string s) : n(0), s(s) { data_type = ColumnAttribute::TEXT; }
 
     bool operator==(const Value &other) const;
 

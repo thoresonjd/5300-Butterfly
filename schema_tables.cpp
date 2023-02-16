@@ -267,8 +267,8 @@ ColumnNames &Indices::COLUMN_NAMES() {
     if (cn.empty()) {
         cn.push_back("table_name");
         cn.push_back("index_name");
-        cn.push_back("seq_in_index");
         cn.push_back("column_name");
+        cn.push_back("seq_in_index");
         cn.push_back("index_type");
         cn.push_back("is_unique");
     }

@@ -10,6 +10,7 @@ using namespace hsql;
 
 // define static data
 Tables* SQLExec::tables = nullptr;
+Indices* SQLExec::indices = nullptr;
 
 // make query result be printable
 ostream& operator<<(ostream& out, const QueryResult& qres) {
@@ -60,6 +61,9 @@ QueryResult::~QueryResult() {
 QueryResult* SQLExec::execute(const SQLStatement* statement) {
     if (!SQLExec::tables)
         SQLExec::tables = new Tables();
+    if (!SQLExec::indices)
+        SQLExec::indices = new Indices();
+
     try {
         switch (statement->type()) {
             case kStmtCreate:
@@ -145,7 +149,7 @@ QueryResult* SQLExec::create_table(const CreateStatement* statement) {
         throw;
     }
 
-    return new QueryResult(string("created ") + statement->tableName);
+    return new QueryResult(string("created table ") + statement->tableName);
 }
 
 QueryResult* SQLExec::create_index(const CreateStatement* statement) {
@@ -200,6 +204,8 @@ QueryResult* SQLExec::show(const ShowStatement* statement) {
             return show_tables();
         case ShowStatement::kColumns:
             return show_columns(statement);
+        case ShowStatement::kIndex:
+            return show_index(statement);
         default:
             return new QueryResult("not implemented");
     }
@@ -239,6 +245,25 @@ QueryResult* SQLExec::show_columns(const ShowStatement* statement) {
     return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows");
 }
 
-QueryResult* SQLExec::show_index(const ShowStatement* statement) {
-     return new QueryResult("show index not implemented"); // FIXME
+QueryResult* SQLExec::show_index(const ShowStatement* statement){
+    ColumnNames* cn = new ColumnNames({
+        "table_name", "index_name", "column_name",
+        "seq_in_index", "index_type", "is_unique"
+    });
+    ColumnAttributes* ca = new ColumnAttributes({
+        ColumnAttribute(ColumnAttribute::DataType::TEXT),
+        ColumnAttribute(ColumnAttribute::DataType::TEXT),
+        ColumnAttribute(ColumnAttribute::DataType::TEXT),
+        ColumnAttribute(ColumnAttribute::DataType::INT),
+        ColumnAttribute(ColumnAttribute::DataType::TEXT),
+        ColumnAttribute(ColumnAttribute::DataType::BOOLEAN),
+    });
+    DbRelation& indices = SQLExec::tables->get_table(Indices::TABLE_NAME);
+    ValueDict where = {{"table_name", Value(statement->tableName)}};
+    Handles* selected = indices.select(&where);
+    ValueDicts* rows = new ValueDicts();
+    for (Handle& row : *selected)
+        rows->push_back(indices.project(row, cn));
+    delete selected;
+    return new QueryResult(cn, ca, rows, "successfully returned " + to_string(rows->size()) + " rows"); // FIXME
 }
