@@ -76,7 +76,7 @@ QueryResult* SQLExec::execute(const SQLStatement* statement) {
                 return new QueryResult("not implemented");
         }
     } catch (DbRelationError& e) {
-        throw SQLExecError(string("DbRelationError: ") + e.what());
+        throw SQLExecError("DbRelationError: " + string(e.what()));
     }
 }
 
@@ -149,7 +149,7 @@ QueryResult* SQLExec::create_table(const CreateStatement* statement) {
         throw;
     }
 
-    return new QueryResult(string("created table ") + statement->tableName);
+    return new QueryResult("created table " + string(statement->tableName));
 }
 
 QueryResult* SQLExec::create_index(const CreateStatement* statement) {
@@ -180,7 +180,7 @@ QueryResult* SQLExec::create_index(const CreateStatement* statement) {
     DbIndex& index = SQLExec::indices->get_index(string(statement->tableName), string(statement->indexName));
     index.create();
 
-    return new QueryResult(string("created index ") + statement->indexName);
+    return new QueryResult("created index " + string(statement->indexName));
 }
 
 QueryResult* SQLExec::drop(const DropStatement* statement) {
@@ -218,11 +218,25 @@ QueryResult* SQLExec::drop_table(const DropStatement* statement) {
     SQLExec::tables->del(*rows->begin());
     delete rows;
 
-    return new QueryResult(string("dropped ") + table_name);    
+    return new QueryResult("dropped table " + table_name);    
 }
 
 QueryResult* SQLExec::drop_index(const DropStatement* statement) {
-    return new QueryResult("drop index not implemented"); // FIXME
+    // call get_index to get a reference to the index and then invoke the drop method on it
+    DbIndex& index = SQLExec::indices->get_index(string(statement->name), string(statement->indexName));
+    index.drop();
+
+    // remove all the rows from _indices for this index
+    ValueDict where = {
+        {"table_name", Value(statement->name)},
+        {"index_name", Value(statement->indexName)}
+    };
+    Handles* selected = SQLExec::indices->select(&where);
+    for (Handle& row : *selected)
+        SQLExec::indices->del(row);
+    delete selected;
+
+    return new QueryResult("dropped index " + string(statement->indexName) + " on table " + string(statement->name));
 }
 
 QueryResult* SQLExec::show(const ShowStatement* statement) {
