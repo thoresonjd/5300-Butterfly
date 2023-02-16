@@ -50,25 +50,34 @@ Justin Thoreson & Grandi Radhakrishna Rakesh
 Rudimentary implementation of the following SQL queries (shown in [BNF](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form) notation):
 
 CREATE TABLE
-```
+```sql
 <table_definition> ::= CREATE TABLE <table_name> ( <column_definitions> )
 <column_definitions> ::= <column_definition> | <column_definition>, <column_definitions>
 <column_definition> ::= <column_name> <datatype>
 ```
     
 DROP TABLE
-```
+```sql
 <drop_table_statement> ::= DROP TABLE <table_name>
 ```
 
 SHOW TABLES
-```
+```sql
 SELECT table_name FROM _tables WHERE table_name NOT IN ("_tables", "_columns");
 ```
 
 SHOW COLUMNS
-```
+```sql
 <show_columns_statement> ::= SHOW COLUMNS FROM <table_name>
+```
+
+### **Milestone 4: Indexing Setup**
+
+Setting up SQL index commands prior to actual index implementation. The following index commands (modeled after [MySQL](https://dev.mysql.com/doc/refman/5.7/en/create-index.html)) are supported:
+```sql
+CREATE INDEX index_name ON table_name [USING {BTREE | HASH}] (col1, col2, ...)
+SHOW INDEX FROM table_name
+DROP INDEX index_name ON table_name
 ```
 
 ### **Compilation**
