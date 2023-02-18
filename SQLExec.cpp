@@ -133,19 +133,19 @@ QueryResult* SQLExec::create_table(const CreateStatement* statement) {
                 table.create_if_not_exists();
             else
                 table.create();
-        } catch (std::exception& e) {
+        } catch (...) {
             // attempt to undo the insertions into _columns
             try {
                 for (Handle& columnHandle : columnHandles)
                     columns.del(columnHandle);
-            } catch (std::exception& e) {}
+            } catch (...) {}
             throw;
         }
-    } catch (std::exception& e) {
+    } catch (...) {
         // attempt to undo the insertion into _tables
         try {
             SQLExec::tables->del(tableHandle);
-        } catch (std::exception& e) {}
+        } catch (...) {}
         throw;
     }
 
