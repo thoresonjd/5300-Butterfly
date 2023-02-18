@@ -8,7 +8,6 @@
 #include <iostream>
 #include <string>
 #include "db_cxx.h"
-#include "SQLParser.h"
 #include "ParseTreeToString.h"
 #include "SQLExec.h"
 #include "tests.h"

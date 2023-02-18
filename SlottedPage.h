@@ -119,18 +119,8 @@ protected:
      */
     void* address(u_int16_t offset) const;
 
+    /**
+     * Test function in tests.h must be friend for convenience
+     */
     friend bool test_slotted_page();
 };
-
-/**
- * Print out given failure message and return false.
- * @param message reason for failure
- * @return false
- */
-bool assertion_failure(std::string message, double x = -1, double y = -1);
-
-/**
- * Testing function for SlottedPage.
- * @return true if testing succeeded, false otherwise
- */
-bool test_slotted_page();
