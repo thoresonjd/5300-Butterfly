@@ -242,7 +242,7 @@ QueryResult* SQLExec::drop_index(const DropStatement* statement) {
         SQLExec::indices->del(row);
     delete selected;
 
-    return new QueryResult("dropped index " + string(statement->indexName) + " on table " + string(statement->name));
+    return new QueryResult("dropped index " + string(statement->indexName));
 }
 
 QueryResult* SQLExec::show(const ShowStatement* statement) {

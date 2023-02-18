@@ -331,7 +331,7 @@ bool test_show_tables(std::size_t nExpectedTables) {
 }
 
 bool test_show_columns_from_schema_tables() {
-    std::cout << "=====================\n";
+    std::cout << "\n=====================\n";
     std::string sql = "show columns from _tables";
     QueryResult* result = parse(sql);
     if (!result)
@@ -363,10 +363,126 @@ bool test_show_columns_from_schema_tables() {
     return true;
 }
 
-bool test_sql_exec() {
-    if (!test_show_tables(0))
+bool test_create_table() {
+    std::cout << "\n=====================\n";
+    std::string sql = "create table egg (yolk text, white int, shell int)";
+    QueryResult* result = parse(sql);
+    if (!result)
         return false;
+    std::cout << *result << std::endl;
+    std::string message = result->get_message();
+    if (message != "created table egg")
+        return false;
+    delete result;
+    std::cout << "create table ok\n";
+    return true;
+}
+
+bool test_create_index() {
+    std::cout << "\n=====================\n";
+    std::string sql = "create index chicken on egg (yolk, shell)";
+    QueryResult* result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    std::string message = result->get_message();
+    if (message != "created index chicken")
+        return false;
+    delete result;
+    std::cout << "create index ok\n";
+    return true;
+}
+
+bool test_show_index(std::size_t nExpectedIndices) {
+    std::cout << "\n=====================\n";
+    std::string sql = "show index from egg";
+    QueryResult* result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    ValueDicts* rows = result->get_rows();
+    if (rows->size() != nExpectedIndices)
+        return false;
+    delete result;
+    std::cout << "show index ok\n";
+    return true;
+}
+
+bool test_drop_index() {
+    std::cout << "\n=====================\n";
+    std::string sql = "drop index chicken from egg";
+    QueryResult* result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    std::string message = result->get_message();
+    if (message != "dropped index chicken")
+        return false;
+    delete result;
+    std::cout << "drop index ok\n";
+    return true;
+}
+
+bool test_drop_table() {
+    std::cout << "\n=====================\n";
+    std::string sql = "drop table egg";
+    QueryResult* result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    std::string message = result->get_message();
+    if (message != "dropped table egg")
+        return false;
+    delete result;
+    std::cout << "drop table ok\n";
+    return true;
+}
+
+bool test_sql_exec() {
     if (!test_show_columns_from_schema_tables())
         return false;
+
+    // test create table
+    if (!test_show_tables(0))
+        return false;
+    if (!test_create_table())
+        return false;
+    if (!test_show_tables(1))
+        return false;
+    
+    // test create index
+    if (!test_show_index(0))
+        return false;
+    if (!test_create_index())
+        return false;
+    if (!test_show_index(2))
+        return false;
+    
+    // test drop index
+    if (!test_drop_index())
+        return false;
+    if (!test_show_index(0))
+        return false;
+    
+    // test drop table
+    if (!test_drop_table())
+        return false;
+    if (!test_show_tables(0))
+        return false;
+    
+    // test indices dropped on drop table
+    if (!test_create_table())
+        return false;
+    if (!test_create_index())
+        return false;
+    if (!test_show_index(2))
+        return false;
+    if (!test_drop_table())
+        return false;
+    if (!test_show_tables(0))
+        return false;
+    if (!test_show_index(0))
+        return false;
+
     return true;
 }
