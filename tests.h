@@ -1,5 +1,7 @@
 /**
- * 
+ * @file test.h - testing functionality
+ * @authors Kevin Lundeen, Justin Thoreson
+ * @see "Seattle University, CPSC5300, Winter 2023"
  */
 
 #pragma once
@@ -10,6 +12,7 @@
 #include "HeapTable.h"
 #include "SQLExec.h"
 #include "ParseTreeToString.h"
+
 
 /**
  * Print out given failure message and return false.
@@ -302,10 +305,14 @@ bool test_heap_storage() {
  * ****************************
  */
 
+/**
+ * Test helper that parses a single SQL command
+ */
 QueryResult* parse(std::string sql) {
     hsql::SQLParserResult* const parsedSQL = hsql::SQLParser::parseSQLString(sql);
     if (!parsedSQL->isValid()) {
         assertion_failure("invlid SQL: " + sql);
+        delete parsedSQL;
         return nullptr;
     }
     const hsql::SQLStatement* statement = parsedSQL->getStatement(0);
@@ -313,6 +320,45 @@ QueryResult* parse(std::string sql) {
     QueryResult* result = SQLExec::execute(statement);
     delete parsedSQL;
     return result;
+}
+
+bool test_show_columns_from_schema_tables() {
+    std::cout << "\n=====================\n";
+    
+    // test show columns from _tables schema
+    std::string sql = "show columns from _tables";
+    QueryResult* result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    ValueDicts* rows = result->get_rows();
+    if (rows->size() != 1)
+        return false;
+    delete result;
+
+    // test show columns from _columns schema
+    sql = "show columns from _columns";
+    result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    rows = result->get_rows();
+    if (rows->size() != 3)
+        return false;
+    delete result;
+
+    // test show columns from _indices schema
+    sql = "show columns from _indices";
+    result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    rows = result->get_rows();
+    if (rows->size() != 6)
+        return false;
+    delete result;
+    std::cout << "show columns from schema tables ok\n";
+    return true;
 }
 
 bool test_show_tables(std::size_t nExpectedTables) {
@@ -327,39 +373,6 @@ bool test_show_tables(std::size_t nExpectedTables) {
         return false;
     delete result;
     std::cout << "show tables ok\n";
-    return true;
-}
-
-bool test_show_columns_from_schema_tables() {
-    std::cout << "\n=====================\n";
-    std::string sql = "show columns from _tables";
-    QueryResult* result = parse(sql);
-    if (!result)
-        return false;
-    std::cout << *result << std::endl;
-    ValueDicts* rows = result->get_rows();
-    if (rows->size() != 1)
-        return false;
-    delete result;
-    sql = "show columns from _columns";
-    result = parse(sql);
-    if (!result)
-        return false;
-    std::cout << *result << std::endl;
-    rows = result->get_rows();
-    if (rows->size() != 3)
-        return false;
-    delete result;
-    sql = "show columns from _indices";
-    result = parse(sql);
-    if (!result)
-        return false;
-    std::cout << *result << std::endl;
-    rows = result->get_rows();
-    if (rows->size() != 6)
-        return false;
-    delete result;
-    std::cout << "show columns from schema tables ok\n";
     return true;
 }
 
@@ -378,18 +391,18 @@ bool test_create_table() {
     return true;
 }
 
-bool test_create_index() {
+bool test_drop_table() {
     std::cout << "\n=====================\n";
-    std::string sql = "create index chicken on egg (yolk, shell)";
+    std::string sql = "drop table egg";
     QueryResult* result = parse(sql);
     if (!result)
         return false;
     std::cout << *result << std::endl;
     std::string message = result->get_message();
-    if (message != "created index chicken")
+    if (message != "dropped table egg")
         return false;
     delete result;
-    std::cout << "create index ok\n";
+    std::cout << "drop table ok\n";
     return true;
 }
 
@@ -408,6 +421,21 @@ bool test_show_index(std::size_t nExpectedIndices) {
     return true;
 }
 
+bool test_create_index() {
+    std::cout << "\n=====================\n";
+    std::string sql = "create index chicken on egg (yolk, shell)";
+    QueryResult* result = parse(sql);
+    if (!result)
+        return false;
+    std::cout << *result << std::endl;
+    std::string message = result->get_message();
+    if (message != "created index chicken")
+        return false;
+    delete result;
+    std::cout << "create index ok\n";
+    return true;
+}
+
 bool test_drop_index() {
     std::cout << "\n=====================\n";
     std::string sql = "drop index chicken from egg";
@@ -423,22 +451,12 @@ bool test_drop_index() {
     return true;
 }
 
-bool test_drop_table() {
-    std::cout << "\n=====================\n";
-    std::string sql = "drop table egg";
-    QueryResult* result = parse(sql);
-    if (!result)
-        return false;
-    std::cout << *result << std::endl;
-    std::string message = result->get_message();
-    if (message != "dropped table egg")
-        return false;
-    delete result;
-    std::cout << "drop table ok\n";
-    return true;
-}
-
+/**
+ * Testing functionality of SQLExec
+ * @return true if all tests succeed
+ */
 bool test_sql_exec() {
+    // test show columns
     if (!test_show_columns_from_schema_tables())
         return false;
 
