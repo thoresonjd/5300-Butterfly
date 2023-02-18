@@ -93,3 +93,8 @@ protected:
     column_definition(const hsql::ColumnDefinition* col, Identifier& column_name, ColumnAttribute& column_attribute);
 };
 
+/**
+ * Testing function for SQL execution
+ * @return true if the tests all succeeded
+ */
+bool test_sql_exec();

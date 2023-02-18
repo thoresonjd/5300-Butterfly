@@ -11,6 +11,7 @@
 #include "SQLParser.h"
 #include "ParseTreeToString.h"
 #include "SQLExec.h"
+#include "tests.h"
 
 using namespace std;
 using namespace hsql;
@@ -84,9 +85,10 @@ void handleSQL(std::string sql) {
     SQLParserResult* const parsedSQL = SQLParser::parseSQLString(sql);
     if (parsedSQL->isValid())
         handleStatements(parsedSQL);
-    else if (sql == TEST)
+    else if (sql == TEST) {
         cout << "test_heap_storage: " << (test_heap_storage() ? "Passed" : "Failed") << endl;
-    else
+        cout << "test_sql_exec: " << (test_sql_exec() ? "Passed" : "Failed") << endl;
+    } else
         cerr << "invalid SQL: " << sql << endl << parsedSQL->errorMsg() << endl;
     delete parsedSQL;
 }

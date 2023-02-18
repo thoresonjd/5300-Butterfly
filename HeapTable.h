@@ -146,27 +146,3 @@ protected:
      */
     virtual bool selected(Handle handle, const ValueDict* where);
 };
-
-/**
- * Test helper. Sets the row's a and b values.
- * @param row to set
- * @param a column value
- * @param b column value
- */
-void test_set_row(ValueDict& row, int a, std::string b);
-
-/**
- * Test helper. Compares row to expected values for columns a and b.
- * @param table    relation where row is
- * @param handle   row to check
- * @param a        expected column value
- * @param b        expected column value
- * @return         true if actual == expected for both columns, false otherwise
- */
-bool test_compare(DbRelation& table, Handle handle, int a, std::string b);
-
-/**
- * Testing function for heap storage engine.
- * @return true if the tests all succeeded
- */
-bool test_heap_storage();
